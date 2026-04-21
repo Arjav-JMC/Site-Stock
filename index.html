@@ -778,9 +778,9 @@ function renderDashboard() {
     <td>${t.person||''}</td>
   </tr>`).join('');
   renderPagination('recent-pagination', recentPage, totalRecentPages,
-    'function(p){recentPage=p;renderDashboard()}',
-    recentPageSize,
-    'function(s){recentPageSize=parseInt(s);recentPage=1;renderDashboard()}');
+  'changeRecentPage',
+  recentPageSize,
+  'changeRecentPageSize');
 }
 
 window.renderLedger = function() {
@@ -817,7 +817,7 @@ window.renderLedger = function() {
     <td><button class="btn btn-danger" onclick="deleteTx('${t._key}')">Del</button></td>
   </tr>`).join('');
   renderPagination('ledger-pagination', ledgerPage, totalPages,
-    'function(p){ledgerPage=p;renderLedger()}',
+  'changeLedgerPage',
     ledgerPageSize,
     'function(s){ledgerPageSize=parseInt(s);ledgerPage=1;renderLedger()}');
 };
@@ -976,6 +976,28 @@ const PAGE_SIZE_DEFAULT = 20;
 let ledgerPageSize = PAGE_SIZE_DEFAULT;
 let recentPageSize = PAGE_SIZE_DEFAULT;
 
+window.changeLedgerPage = function(p) {
+  ledgerPage = p;
+  renderLedger();
+};
+
+window.changeRecentPage = function(p) {
+  recentPage = p;
+  renderDashboard();
+};
+
+window.changeLedgerPageSize = function(s) {
+  ledgerPageSize = parseInt(s);
+  ledgerPage = 1;
+  renderLedger();
+};
+
+window.changeRecentPageSize = function(s) {
+  recentPageSize = parseInt(s);
+  recentPage = 1;
+  renderDashboard();
+};
+
 window.resetLedgerPage = function() { ledgerPage = 1; };
 window.clearDateRange = function() {
   document.getElementById('f-from').value = '';
@@ -986,16 +1008,23 @@ window.clearDateRange = function() {
 
 function renderPagination(containerId, currentPage, totalPages, onPageChange, pageSize, onSizeChange) {
   const el = document.getElementById(containerId);
-  if(totalPages <= 1 && false) { el.innerHTML=''; return; }
-  const start = (currentPage-1)*pageSize + 1;
-  const end = Math.min(currentPage*pageSize, totalPages*pageSize);
+
+  // Hide pagination if only 1 page
+  if (totalPages <= 1) {
+    el.innerHTML = '';
+    return;
+  }
+
+  const start = (currentPage - 1) * pageSize + 1;
+  const end = Math.min(currentPage * pageSize, totalPages * pageSize);
 
   let pages = '';
   const delta = 2;
-  for(let i=1; i<=totalPages; i++) {
-    if(i===1 || i===totalPages || (i>=currentPage-delta && i<=currentPage+delta)) {
-      pages += `<button class="page-btn ${i===currentPage?'active':''}" onclick="(${onPageChange})(${i})">${i}</button>`;
-    } else if(i===currentPage-delta-1 || i===currentPage+delta+1) {
+
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+      pages += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="${onPageChange}(${i})">${i}</button>`;
+    } else if (i === currentPage - delta - 1 || i === currentPage + delta + 1) {
       pages += `<span style="color:var(--text-faint);padding:0 2px">…</span>`;
     }
   }
@@ -1003,18 +1032,20 @@ function renderPagination(containerId, currentPage, totalPages, onPageChange, pa
   el.innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;">
       <span class="pagination-info">Page ${currentPage} of ${totalPages}</span>
-      <select class="page-size-select" onchange="(${onSizeChange})(this.value)">
-        <option value="10" ${pageSize===10?'selected':''}>10/page</option>
-        <option value="20" ${pageSize===20?'selected':''}>20/page</option>
-        <option value="50" ${pageSize===50?'selected':''}>50/page</option>
-        <option value="100" ${pageSize===100?'selected':''}>100/page</option>
+      <select class="page-size-select" onchange="${onSizeChange}(this.value)">
+        <option value="10" ${pageSize === 10 ? 'selected' : ''}>10/page</option>
+        <option value="20" ${pageSize === 20 ? 'selected' : ''}>20/page</option>
+        <option value="50" ${pageSize === 50 ? 'selected' : ''}>50/page</option>
+        <option value="100" ${pageSize === 100 ? 'selected' : ''}>100/page</option>
       </select>
     </div>
+
     <div class="pagination-controls">
-      <button class="page-btn" onclick="(${onPageChange})(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>
+      <button class="page-btn" onclick="${onPageChange}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>
       ${pages}
-      <button class="page-btn" onclick="(${onPageChange})(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>
-    </div>`;
+      <button class="page-btn" onclick="${onPageChange}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>›</button>
+    </div>
+  `;
 }
 const activeTab = { current: 'dashboard' };
 window.showTab = function(t) {
