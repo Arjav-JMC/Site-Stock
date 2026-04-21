@@ -139,6 +139,19 @@ tr:hover td { background: var(--bg); }
 .filter-bar { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
 .filter-bar input, .filter-bar select { width: auto; flex: 1; min-width: 140px; font-size: 13px; }
 
+/* Pagination */
+.pagination-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; flex-wrap: wrap; gap: 8px; }
+.pagination-info { font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+.pagination-controls { display: flex; align-items: center; gap: 6px; }
+.page-btn { padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-family: var(--mono); color: var(--text-muted); cursor: pointer; transition: all 0.15s; min-width: 32px; text-align: center; }
+.page-btn:hover:not(:disabled) { border-color: var(--text); color: var(--text); }
+.page-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+.page-btn:disabled { opacity: 0.35; cursor: default; }
+.page-size-select { padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; font-family: var(--mono); color: var(--text-muted); background: var(--surface); cursor: pointer; }
+.date-range-bar { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+.date-range-bar input { width: auto; flex: 1; min-width: 130px; font-size: 13px; }
+.date-range-bar label { font-size: 11px; font-weight: 600; color: var(--text-muted); font-family: var(--mono); white-space: nowrap; }
+
 /* Summary table site columns */
 .site-col-header { font-size: 10px; text-align: center; padding: 6px 8px; }
 .site-col-cell { text-align: center; font-family: var(--mono); font-size: 12px; }
@@ -268,6 +281,7 @@ tr:hover td { background: var(--bg); }
           <tbody id="recent-body"><tr class="empty-row"><td colspan="7"><div class="loader"><div class="spinner"></div>Loading...</div></td></tr></tbody>
         </table>
       </div>
+      <div class="pagination-bar" id="recent-pagination"></div>
     </div>
   </div>
 
@@ -349,9 +363,16 @@ tr:hover td { background: var(--bg); }
   <div id="tab-ledger" class="section">
     <div class="card">
       <div class="card-title">Full Transaction Ledger</div>
+      <div class="date-range-bar">
+        <label>From</label>
+        <input type="date" id="f-from" onchange="resetLedgerPage();renderLedger()">
+        <label>To</label>
+        <input type="date" id="f-to" onchange="resetLedgerPage();renderLedger()">
+        <button class="btn" style="font-size:12px;padding:6px 12px;border-color:var(--border)" onclick="clearDateRange()">Clear dates</button>
+      </div>
       <div class="filter-bar">
-        <input type="text" id="f-text" placeholder="Search material, person, challan..." oninput="renderLedger()">
-        <select id="f-type" onchange="renderLedger()">
+        <input type="text" id="f-text" placeholder="Search material, person, challan..." oninput="resetLedgerPage();renderLedger()">
+        <select id="f-type" onchange="resetLedgerPage();renderLedger()">
           <option value="">All types</option>
           <option value="hq">HQ supply</option>
           <option value="purchase">Site purchase</option>
@@ -360,7 +381,7 @@ tr:hover td { background: var(--bg); }
           <option value="return">Return</option>
           <option value="issue">Issued out</option>
         </select>
-        <select id="f-mat" onchange="renderLedger()"><option value="">All materials</option></select>
+        <select id="f-mat" onchange="resetLedgerPage();renderLedger()"><option value="">All materials</option></select>
         <button class="btn btn-export" onclick="exportCSV()">Export CSV</button>
       </div>
       <div class="table-wrap">
@@ -369,6 +390,7 @@ tr:hover td { background: var(--bg); }
           <tbody id="ledger-body"></tbody>
         </table>
       </div>
+      <div class="pagination-bar" id="ledger-pagination"></div>
     </div>
   </div>
 
@@ -739,9 +761,13 @@ function renderDashboard() {
   });
   document.getElementById('low-alerts').innerHTML = alerts;
 
-  const recent = [...txArr].sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,10);
+  const allRecent = [...txArr].sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const totalRecentPages = Math.max(1, Math.ceil(allRecent.length / recentPageSize));
+  if(recentPage > totalRecentPages) recentPage = totalRecentPages;
+  const recent = allRecent.slice((recentPage-1)*recentPageSize, recentPage*recentPageSize);
   const tbody = document.getElementById('recent-body');
-  if(!recent.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions yet for this site.</td></tr>'; return; }
+  if(!allRecent.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions yet for this site.</td></tr>';
+    document.getElementById('recent-pagination').innerHTML=''; return; }
   tbody.innerHTML = recent.map(t=>`<tr>
     <td style="font-family:var(--mono);font-size:12px">${t.date}</td>
     <td><span class="badge ${typeBadge[t.type]||''}">${typeLabels[t.type]||t.type}</span></td>
@@ -751,6 +777,10 @@ function renderDashboard() {
     <td style="color:var(--text-muted)">${t.unit||''}</td>
     <td>${t.person||''}</td>
   </tr>`).join('');
+  renderPagination('recent-pagination', recentPage, totalRecentPages,
+    'function(p){recentPage=p;renderDashboard()}',
+    recentPageSize,
+    'function(s){recentPageSize=parseInt(s);recentPage=1;renderDashboard()}');
 }
 
 window.renderLedger = function() {
@@ -758,13 +788,21 @@ window.renderLedger = function() {
   const txt = (document.getElementById('f-text').value||'').toLowerCase();
   const ftype = document.getElementById('f-type').value;
   const fmat = document.getElementById('f-mat').value;
+  const ffrom = document.getElementById('f-from')?.value||'';
+  const fto = document.getElementById('f-to')?.value||'';
   let txs = Object.entries(transactions).map(([k,v])=>({...v,_key:k})).sort((a,b)=>new Date(b.date)-new Date(a.date));
   if(txt) txs = txs.filter(t=>(t.material+t.person+t.purpose+t.challan+t.remarks+'').toLowerCase().includes(txt));
   if(ftype) txs = txs.filter(t=>t.type===ftype);
   if(fmat) txs = txs.filter(t=>t.material===fmat);
+  if(ffrom) txs = txs.filter(t=>t.date >= ffrom);
+  if(fto) txs = txs.filter(t=>t.date <= fto);
+  const totalPages = Math.max(1, Math.ceil(txs.length / ledgerPageSize));
+  if(ledgerPage > totalPages) ledgerPage = totalPages;
+  const paged = txs.slice((ledgerPage-1)*ledgerPageSize, ledgerPage*ledgerPageSize);
   const tbody = document.getElementById('ledger-body');
-  if(!txs.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="12">No transactions found</td></tr>'; return; }
-  tbody.innerHTML = txs.map(t=>`<tr>
+  if(!txs.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="12">No transactions found</td></tr>';
+    document.getElementById('ledger-pagination').innerHTML=''; return; }
+  tbody.innerHTML = paged.map(t=>`<tr>
     <td style="font-family:var(--mono);font-size:11px;white-space:nowrap">${t.date}</td>
     <td><span class="badge ${typeBadge[t.type]||''}">${typeLabels[t.type]||t.type}</span></td>
     <td><strong>${t.material}</strong></td>
@@ -778,6 +816,10 @@ window.renderLedger = function() {
     <td style="font-size:12px;color:var(--text-muted)">${t.remarks||''}</td>
     <td><button class="btn btn-danger" onclick="deleteTx('${t._key}')">Del</button></td>
   </tr>`).join('');
+  renderPagination('ledger-pagination', ledgerPage, totalPages,
+    'function(p){ledgerPage=p;renderLedger()}',
+    ledgerPageSize,
+    'function(s){ledgerPageSize=parseInt(s);ledgerPage=1;renderLedger()}');
 };
 
 function renderBalances() {
@@ -927,6 +969,53 @@ window.exportCSV = function() {
   a.click();
 };
 
+// PAGINATION STATE
+let ledgerPage = 1;
+let recentPage = 1;
+const PAGE_SIZE_DEFAULT = 20;
+let ledgerPageSize = PAGE_SIZE_DEFAULT;
+let recentPageSize = PAGE_SIZE_DEFAULT;
+
+window.resetLedgerPage = function() { ledgerPage = 1; };
+window.clearDateRange = function() {
+  document.getElementById('f-from').value = '';
+  document.getElementById('f-to').value = '';
+  ledgerPage = 1;
+  renderLedger();
+};
+
+function renderPagination(containerId, currentPage, totalPages, onPageChange, pageSize, onSizeChange) {
+  const el = document.getElementById(containerId);
+  if(totalPages <= 1 && false) { el.innerHTML=''; return; }
+  const start = (currentPage-1)*pageSize + 1;
+  const end = Math.min(currentPage*pageSize, totalPages*pageSize);
+
+  let pages = '';
+  const delta = 2;
+  for(let i=1; i<=totalPages; i++) {
+    if(i===1 || i===totalPages || (i>=currentPage-delta && i<=currentPage+delta)) {
+      pages += `<button class="page-btn ${i===currentPage?'active':''}" onclick="(${onPageChange})(${i})">${i}</button>`;
+    } else if(i===currentPage-delta-1 || i===currentPage+delta+1) {
+      pages += `<span style="color:var(--text-faint);padding:0 2px">…</span>`;
+    }
+  }
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="pagination-info">Page ${currentPage} of ${totalPages}</span>
+      <select class="page-size-select" onchange="(${onSizeChange})(this.value)">
+        <option value="10" ${pageSize===10?'selected':''}>10/page</option>
+        <option value="20" ${pageSize===20?'selected':''}>20/page</option>
+        <option value="50" ${pageSize===50?'selected':''}>50/page</option>
+        <option value="100" ${pageSize===100?'selected':''}>100/page</option>
+      </select>
+    </div>
+    <div class="pagination-controls">
+      <button class="page-btn" onclick="(${onPageChange})(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>
+      ${pages}
+      <button class="page-btn" onclick="(${onPageChange})(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>
+    </div>`;
+}
 const activeTab = { current: 'dashboard' };
 window.showTab = function(t) {
   document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['dashboard','inward','outward','ledger','balances','materials'][i]===t));
