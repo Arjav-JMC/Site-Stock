@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Stock Register — JMC</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F3EE;
+  --surface: #FFFFFF;
+  --border: #D8D4CB;
+  --border-strong: #B8B2A7;
+  --text: #1A1814;
+  --text-muted: #6B6760;
+  --text-faint: #9E9A94;
+  --accent: #C84B2F;
+  --accent-light: #F5EAE6;
+  --green: #2E7D52;
+  --green-light: #E8F5EE;
+  --amber: #B45309;
+  --amber-light: #FEF3C7;
+  --blue: #1D4ED8;
+  --blue-light: #EFF6FF;
+  --purple: #6D28D9;
+  --purple-light: #F5F3FF;
+  --pink: #BE185D;
+  --pink-light: #FDF2F8;
+  --font: 'IBM Plex Sans', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+/* Header */
+.header { background: var(--text); color: #fff; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.08em; color: #fff; }
+.logo span { color: var(--accent); }
+.site-badge { font-size: 11px; background: rgba(255,255,255,0.12); padding: 3px 10px; border-radius: 20px; color: rgba(255,255,255,0.7); font-family: var(--mono); }
+.sync-status { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; }
+.sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
+.sync-dot.error { background: var(--accent); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Nav */
+.nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; gap: 0; overflow-x: auto; }
+.nav-btn { font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--text-muted); padding: 14px 18px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: color 0.15s; }
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Layout */
+.main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.25rem; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.25rem; font-family: var(--mono); }
+
+/* Metrics */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; }
+.metric-label { font-size: 11px; font-weight: 500; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--mono); }
+.metric-value { font-size: 28px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+.metric-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* Forms */
+.form-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; font-family: var(--mono); }
+input[type=text], input[type=number], input[type=date], select, textarea {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-family: var(--font); font-size: 14px; color: var(--text); background: var(--bg);
+  outline: none; transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--text); background: #fff; }
+input[readonly] { color: var(--text-muted); cursor: default; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: var(--radius); font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
+.btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
+.btn-primary:hover { background: #333; }
+.btn-secondary { background: transparent; color: var(--text); border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--bg); }
+.btn-danger { background: transparent; color: var(--accent); border-color: #ECC; font-size: 12px; padding: 4px 10px; }
+.btn-danger:hover { background: var(--accent-light); }
+.btn-export { background: var(--green); color: #fff; border-color: var(--green); font-size: 12px; padding: 6px 14px; }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { font-size: 10px; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; font-family: var(--mono); white-space: nowrap; }
+td { padding: 10px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+.empty-row td { text-align: center; color: var(--text-faint); padding: 3rem; font-size: 13px; }
+
+/* Badges */
+.badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; font-family: var(--mono); white-space: nowrap; letter-spacing: 0.04em; }
+.b-hq { background: var(--blue-light); color: var(--blue); }
+.b-purchase { background: var(--amber-light); color: var(--amber); }
+.b-client { background: var(--pink-light); color: var(--pink); }
+.b-transfer { background: var(--purple-light); color: var(--purple); }
+.b-return { background: var(--green-light); color: var(--green); }
+.b-issue { background: var(--accent-light); color: var(--accent); }
+.b-ok { background: var(--green-light); color: var(--green); }
+.b-low { background: #FEE2E2; color: #B91C1C; }
+
+/* Alert */
+.alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.alert-low { background: #FEE2E2; border: 1px solid #FECACA; color: #B91C1C; }
+.alert-info { background: var(--blue-light); border: 1px solid #BFDBFE; color: var(--blue); }
+
+/* Filter bar */
+.filter-bar { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+.filter-bar input, .filter-bar select { width: auto; flex: 1; min-width: 140px; font-size: 13px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--text); color: #fff; padding: 12px 20px; border-radius: var(--radius-lg); font-size: 13px; font-weight: 500; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { background: var(--accent); }
+
+/* Loader */
+.loader { display: flex; align-items: center; justify-content: center; padding: 4rem; color: var(--text-faint); font-size: 13px; font-family: var(--mono); gap: 10px; }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .main { padding: 1rem; }
+  .form-grid2, .form-grid3 { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+  .header { padding: 0 1rem; }
+  .nav { padding: 0 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">JMC<span>.</span>STOCK</div>
+    <div class="site-badge">Site Register v1.0</div>
+  </div>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-text">Connected</span>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showTab('dashboard')">Dashboard</button>
+  <button class="nav-btn" onclick="showTab('inward')">Record Inward</button>
+  <button class="nav-btn" onclick="showTab('outward')">Record Issuance</button>
+  <button class="nav-btn" onclick="showTab('ledger')">Full Ledger</button>
+  <button class="nav-btn" onclick="showTab('balances')">Stock Balances</button>
+  <button class="nav-btn" onclick="showTab('materials')">Materials</button>
+</nav>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div id="tab-dashboard" class="section active">
+    <div class="metrics-grid" id="metrics-grid"></div>
+    <div id="low-alerts"></div>
+    <div class="card">
+      <div class="card-title">Recent Transactions</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Person / Source</th></tr></thead>
+          <tbody id="recent-body"><tr class="empty-row"><td colspan="7"><div class="loader"><div class="spinner"></div>Loading...</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- INWARD -->
+  <div id="tab-inward" class="section">
+    <div class="card">
+      <div class="card-title">Record Inward Transaction</div>
+      <div class="form-grid2">
+        <div class="form-group"><label>Date</label><input type="date" id="in-date"></div>
+        <div class="form-group"><label>Transaction Type</label>
+          <select id="in-type">
+            <option value="hq">Material from HQ</option>
+            <option value="purchase">Purchased by site staff</option>
+            <option value="client">Issued by client (debitable)</option>
+            <option value="transfer">Transfer from onsite contractor</option>
+            <option value="return">Return to stockyard</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid2">
+        <div class="form-group"><label>Select existing material</label>
+          <select id="in-material"><option value="">— select —</option></select>
+        </div>
+        <div class="form-group"><label>Or type new material name</label>
+          <input type="text" id="in-new-material" placeholder="e.g. OPC Cement 53 Grade, JCB Machine">
+        </div>
+      </div>
+      <div class="form-grid3">
+        <div class="form-group"><label>Quantity</label><input type="number" id="in-qty" min="0" step="any" placeholder="0"></div>
+        <div class="form-group"><label>Unit</label>
+          <select id="in-unit">
+            <option>bags</option><option>kg</option><option>MT</option><option>nos</option>
+            <option>sqft</option><option>sqm</option><option>rft</option><option>litre</option>
+            <option>cum</option><option>set</option><option>lot</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Challan / Invoice No.</label><input type="text" id="in-challan" placeholder="optional"></div>
+      </div>
+      <div class="form-group"><label>Received from (person / supplier / contractor)</label>
+        <input type="text" id="in-from" placeholder="Full name of person or party sending material">
+      </div>
+      <div class="form-group"><label>Remarks</label><input type="text" id="in-remarks" placeholder="optional"></div>
+      <button class="btn btn-primary" onclick="saveInward()">Save Inward Entry</button>
+    </div>
+  </div>
+
+  <!-- OUTWARD -->
+  <div id="tab-outward" class="section">
+    <div class="card">
+      <div class="card-title">Record Material Issuance</div>
+      <div class="form-grid2">
+        <div class="form-group"><label>Date</label><input type="date" id="out-date"></div>
+        <div class="form-group"><label>Material</label>
+          <select id="out-material" onchange="fillOutwardMeta()"><option value="">— select —</option></select>
+        </div>
+      </div>
+      <div class="form-grid3">
+        <div class="form-group"><label>Quantity to issue</label><input type="number" id="out-qty" min="0" step="any" placeholder="0"></div>
+        <div class="form-group"><label>Unit</label><input type="text" id="out-unit" readonly placeholder="auto"></div>
+        <div class="form-group"><label>Available balance</label><input type="text" id="out-avail" readonly placeholder="select material"></div>
+      </div>
+      <div class="form-grid2">
+        <div class="form-group"><label>Issued to (person receiving material)</label>
+          <input type="text" id="out-to" placeholder="Full name of person">
+        </div>
+        <div class="form-group"><label>Issued by (authorising person)</label>
+          <input type="text" id="out-by" placeholder="Your name / supervisor name">
+        </div>
+      </div>
+      <div class="form-group"><label>Purpose / Work area</label>
+        <input type="text" id="out-purpose" placeholder="e.g. Foundation work Block A, Roof slab Block B">
+      </div>
+      <div class="form-group"><label>Remarks</label><input type="text" id="out-remarks" placeholder="optional"></div>
+      <button class="btn btn-primary" onclick="saveOutward()">Save Issuance Entry</button>
+    </div>
+  </div>
+
+  <!-- LEDGER -->
+  <div id="tab-ledger" class="section">
+    <div class="card">
+      <div class="card-title">Full Transaction Ledger</div>
+      <div class="filter-bar">
+        <input type="text" id="f-text" placeholder="Search material, person, challan..." oninput="renderLedger()">
+        <select id="f-type" onchange="renderLedger()">
+          <option value="">All types</option>
+          <option value="hq">HQ supply</option>
+          <option value="purchase">Site purchase</option>
+          <option value="client">Client issue</option>
+          <option value="transfer">Contractor transfer</option>
+          <option value="return">Return</option>
+          <option value="issue">Issued out</option>
+        </select>
+        <select id="f-mat" onchange="renderLedger()"><option value="">All materials</option></select>
+        <button class="btn btn-export" onclick="exportCSV()">Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Person / Source</th><th>Issued To</th><th>Purpose</th><th>Challan</th><th>Remarks</th><th>Del</th></tr></thead>
+          <tbody id="ledger-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- BALANCES -->
+  <div id="tab-balances" class="section">
+    <div class="card">
+      <div class="card-title">Material-wise Stock Balances</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Material</th><th>Unit</th><th>Total Received</th><th>Total Issued</th><th>Balance</th><th>Min Level</th><th>Status</th></tr></thead>
+          <tbody id="balance-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATERIALS -->
+  <div id="tab-materials" class="section">
+    <div class="card">
+      <div class="card-title">Add New Material / Asset</div>
+      <div class="form-grid3">
+        <div class="form-group"><label>Material name</label>
+          <input type="text" id="mat-name" placeholder="e.g. TMT Steel 12mm, Tower Crane">
+        </div>
+        <div class="form-group"><label>Unit</label>
+          <select id="mat-unit">
+            <option>bags</option><option>kg</option><option>MT</option><option>nos</option>
+            <option>sqft</option><option>sqm</option><option>rft</option><option>litre</option>
+            <option>cum</option><option>set</option><option>lot</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Min stock alert level</label>
+          <input type="number" id="mat-min" placeholder="0 = no alert" min="0">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addMaterial()">Add Material</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Material List</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Material name</th><th>Unit</th><th>Min alert</th><th>Action</th></tr></thead>
+          <tbody id="mat-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB05ohXzOHY9hwa10mqdpHUNpU_lI2W8wc",
+  authDomain: "kasa-isle-stock.firebaseapp.com",
+  databaseURL: "https://kasa-isle-stock-default-rtdb.firebaseio.com",
+  projectId: "kasa-isle-stock",
+  storageBucket: "kasa-isle-stock.firebasestorage.app",
+  messagingSenderId: "537720610907",
+  appId: "1:537720610907:web:2d5ea5bcbf5075dd23df7e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let materials = {};
+let transactions = {};
+
+const syncDot = document.getElementById('sync-dot');
+const syncText = document.getElementById('sync-text');
+
+function setSyncing() { syncDot.className='sync-dot syncing'; syncText.textContent='Syncing...'; }
+function setSynced() { syncDot.className='sync-dot'; syncText.textContent='Connected'; }
+function setError() { syncDot.className='sync-dot error'; syncText.textContent='Error'; }
+
+function toast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError?' error':'');
+  setTimeout(()=>t.className='toast', 2800);
+}
+
+const typeLabels = { hq:'HQ Supply', purchase:'Site Purchase', client:'Client Issue', transfer:'Contractor Transfer', return:'Return', issue:'Issued Out' };
+const typeBadge = { hq:'b-hq', purchase:'b-purchase', client:'b-client', transfer:'b-transfer', return:'b-return', issue:'b-issue' };
+
+function getBalance(matName) {
+  let inn=0, out=0;
+  Object.values(transactions).forEach(tx => {
+    if(tx.material !== matName) return;
+    if(tx.direction==='in') inn += parseFloat(tx.qty)||0;
+    else out += parseFloat(tx.qty)||0;
+  });
+  return { inn, out, bal: inn-out };
+}
+
+function populateDropdowns() {
+  const matNames = Object.values(materials).map(m=>m.name).sort();
+  ['in-material','out-material','f-mat'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const cur = el.value;
+    const prefix = id==='f-mat'?'<option value="">All materials</option>':'<option value="">— select —</option>';
+    el.innerHTML = prefix + matNames.map(n=>{
+      const m = Object.values(materials).find(x=>x.name===n);
+      return `<option value="${n}">${n} (${m?.unit||''})</option>`;
+    }).join('');
+    if(cur) el.value = cur;
+  });
+}
+
+window.fillOutwardMeta = function() {
+  const name = document.getElementById('out-material').value;
+  const m = Object.values(materials).find(x=>x.name===name);
+  if(m) {
+    document.getElementById('out-unit').value = m.unit;
+    const {bal} = getBalance(name);
+    document.getElementById('out-avail').value = bal.toFixed(2) + ' ' + m.unit;
+  } else {
+    document.getElementById('out-unit').value = '';
+    document.getElementById('out-avail').value = '';
+  }
+};
+
+function renderDashboard() {
+  const txArr = Object.values(transactions);
+  const totalMats = Object.keys(materials).length;
+  const totalTx = txArr.length;
+  const totalIn = txArr.filter(t=>t.direction==='in').reduce((s,t)=>s+(parseFloat(t.qty)||0),0);
+  const totalOut = txArr.filter(t=>t.direction==='out').reduce((s,t)=>s+(parseFloat(t.qty)||0),0);
+
+  document.getElementById('metrics-grid').innerHTML = `
+    <div class="metric"><div class="metric-label">Materials Tracked</div><div class="metric-value">${totalMats}</div></div>
+    <div class="metric"><div class="metric-label">Total Transactions</div><div class="metric-value">${totalTx}</div></div>
+    <div class="metric"><div class="metric-label">Units Received</div><div class="metric-value">${totalIn.toFixed(1)}</div><div class="metric-sub">across all materials</div></div>
+    <div class="metric"><div class="metric-label">Units Issued</div><div class="metric-value">${totalOut.toFixed(1)}</div><div class="metric-sub">from stockyard</div></div>`;
+
+  let alerts = '';
+  Object.values(materials).forEach(m => {
+    if(!m.min || m.min<=0) return;
+    const {bal} = getBalance(m.name);
+    if(bal <= m.min) alerts += `<div class="alert alert-low">⚠ Low stock: <strong>${m.name}</strong> — balance ${bal.toFixed(2)} ${m.unit} (min: ${m.min})</div>`;
+  });
+  document.getElementById('low-alerts').innerHTML = alerts || '';
+
+  const recent = txArr.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);
+  const tbody = document.getElementById('recent-body');
+  if(!recent.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions yet. Start by adding materials and recording entries.</td></tr>'; return; }
+  tbody.innerHTML = recent.map(t=>`<tr>
+    <td style="font-family:var(--mono);font-size:12px">${t.date}</td>
+    <td><span class="badge ${typeBadge[t.type]||''}">${typeLabels[t.type]||t.type}</span></td>
+    <td><strong>${t.material}</strong></td>
+    <td style="color:var(--green);font-weight:500">${t.direction==='in'?t.qty:''}</td>
+    <td style="color:var(--accent);font-weight:500">${t.direction==='out'?t.qty:''}</td>
+    <td style="color:var(--text-muted)">${t.unit||''}</td>
+    <td>${t.person||''}</td>
+  </tr>`).join('');
+}
+
+window.renderLedger = function() {
+  populateDropdowns();
+  const txt = (document.getElementById('f-text').value||'').toLowerCase();
+  const ftype = document.getElementById('f-type').value;
+  const fmat = document.getElementById('f-mat').value;
+  let txs = Object.entries(transactions).map(([k,v])=>({...v,_key:k})).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(txt) txs = txs.filter(t=>(t.material+t.person+t.purpose+t.challan+t.remarks+t.issuedBy+'').toLowerCase().includes(txt));
+  if(ftype) txs = txs.filter(t=>t.type===ftype);
+  if(fmat) txs = txs.filter(t=>t.material===fmat);
+  const tbody = document.getElementById('ledger-body');
+  if(!txs.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="12">No transactions found</td></tr>'; return; }
+  tbody.innerHTML = txs.map(t=>`<tr>
+    <td style="font-family:var(--mono);font-size:11px;white-space:nowrap">${t.date}</td>
+    <td><span class="badge ${typeBadge[t.type]||''}">${typeLabels[t.type]||t.type}</span></td>
+    <td><strong>${t.material}</strong></td>
+    <td style="color:var(--green);font-weight:500">${t.direction==='in'?t.qty:''}</td>
+    <td style="color:var(--accent);font-weight:500">${t.direction==='out'?t.qty:''}</td>
+    <td style="color:var(--text-muted)">${t.unit||''}</td>
+    <td>${t.direction==='in'?t.person||'':''}</td>
+    <td>${t.direction==='out'?t.person||'':''}</td>
+    <td style="font-size:12px">${t.purpose||''}</td>
+    <td style="font-family:var(--mono);font-size:11px">${t.challan||''}</td>
+    <td style="font-size:12px;color:var(--text-muted)">${t.remarks||''}</td>
+    <td><button class="btn btn-danger" onclick="deleteTx('${t._key}')">Del</button></td>
+  </tr>`).join('');
+};
+
+function renderBalances() {
+  const tbody = document.getElementById('balance-body');
+  const mats = Object.values(materials);
+  if(!mats.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No materials added yet</td></tr>'; return; }
+  tbody.innerHTML = mats.sort((a,b)=>a.name.localeCompare(b.name)).map(m=>{
+    const {inn,out,bal} = getBalance(m.name);
+    const low = m.min>0 && bal<=m.min;
+    return `<tr>
+      <td><strong>${m.name}</strong></td>
+      <td style="color:var(--text-muted)">${m.unit}</td>
+      <td style="color:var(--green);font-weight:500">${inn.toFixed(2)}</td>
+      <td style="color:var(--accent);font-weight:500">${out.toFixed(2)}</td>
+      <td style="font-size:16px;font-weight:600;font-family:var(--mono);color:${low?'var(--accent)':'var(--text)'}">${bal.toFixed(2)}</td>
+      <td style="color:var(--text-muted)">${m.min||'—'}</td>
+      <td><span class="badge ${low?'b-low':'b-ok'}">${low?'LOW':'OK'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMaterials() {
+  const tbody = document.getElementById('mat-body');
+  const mats = Object.entries(materials);
+  if(!mats.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="4">No materials yet. Add your first material above.</td></tr>'; return; }
+  tbody.innerHTML = mats.sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([k,m])=>`<tr>
+    <td><strong>${m.name}</strong></td>
+    <td style="color:var(--text-muted)">${m.unit}</td>
+    <td style="color:var(--text-muted)">${m.min||'None'}</td>
+    <td><button class="btn btn-danger" onclick="deleteMaterial('${k}','${m.name.replace(/'/g,"\\'")}')">Delete</button></td>
+  </tr>`).join('');
+}
+
+window.addMaterial = async function() {
+  const name = document.getElementById('mat-name').value.trim();
+  const unit = document.getElementById('mat-unit').value;
+  const min = parseFloat(document.getElementById('mat-min').value)||0;
+  if(!name) { toast('Please enter a material name.', true); return; }
+  if(Object.values(materials).find(m=>m.name===name)) { toast('Material already exists.', true); return; }
+  setSyncing();
+  try {
+    await push(ref(db,'materials'), { name, unit, min });
+    document.getElementById('mat-name').value='';
+    document.getElementById('mat-min').value='';
+    toast('Material added!');
+  } catch(e) { setError(); toast('Error saving. Check connection.', true); }
+};
+
+window.deleteMaterial = async function(key, name) {
+  if(!confirm(`Delete "${name}"? Transaction history will be kept.`)) return;
+  setSyncing();
+  try { await remove(ref(db,`materials/${key}`)); toast('Material deleted.'); }
+  catch(e) { setError(); toast('Error deleting.', true); }
+};
+
+window.saveInward = async function() {
+  const date = document.getElementById('in-date').value;
+  const type = document.getElementById('in-type').value;
+  let material = document.getElementById('in-material').value;
+  const newMat = document.getElementById('in-new-material').value.trim();
+  const qty = parseFloat(document.getElementById('in-qty').value);
+  const unit = document.getElementById('in-unit').value;
+  const challan = document.getElementById('in-challan').value.trim();
+  const from = document.getElementById('in-from').value.trim();
+  const remarks = document.getElementById('in-remarks').value.trim();
+
+  if(!date) { toast('Please select a date.', true); return; }
+  if(!qty||qty<=0) { toast('Please enter a valid quantity.', true); return; }
+  if(!from) { toast('Please enter the received from name.', true); return; }
+
+  setSyncing();
+  try {
+    if(newMat) {
+      if(!Object.values(materials).find(m=>m.name===newMat)) {
+        await push(ref(db,'materials'), { name: newMat, unit, min: 0 });
+      }
+      material = newMat;
+      document.getElementById('in-new-material').value='';
+    }
+    if(!material) { toast('Please select or enter a material.', true); setSynced(); return; }
+
+    await push(ref(db,'transactions'), { date, type, material, qty, unit, challan, person: from, remarks, direction:'in', ts: Date.now() });
+    document.getElementById('in-qty').value='';
+    document.getElementById('in-challan').value='';
+    document.getElementById('in-from').value='';
+    document.getElementById('in-remarks').value='';
+    toast('Inward entry saved!');
+  } catch(e) { setError(); toast('Error saving. Check connection.', true); }
+};
+
+window.saveOutward = async function() {
+  const date = document.getElementById('out-date').value;
+  const material = document.getElementById('out-material').value;
+  const qty = parseFloat(document.getElementById('out-qty').value);
+  const unit = document.getElementById('out-unit').value;
+  const to = document.getElementById('out-to').value.trim();
+  const purpose = document.getElementById('out-purpose').value.trim();
+  const by = document.getElementById('out-by').value.trim();
+  const remarks = document.getElementById('out-remarks').value.trim();
+
+  if(!date) { toast('Please select a date.', true); return; }
+  if(!material) { toast('Please select a material.', true); return; }
+  if(!qty||qty<=0) { toast('Please enter a valid quantity.', true); return; }
+  if(!to) { toast('Please enter the name of person receiving material.', true); return; }
+
+  const {bal} = getBalance(material);
+  if(qty > bal) { toast(`Insufficient stock! Available: ${bal.toFixed(2)} ${unit}`, true); return; }
+
+  setSyncing();
+  try {
+    await push(ref(db,'transactions'), { date, type:'issue', material, qty, unit, person: to, purpose, issuedBy: by, remarks, direction:'out', ts: Date.now() });
+    document.getElementById('out-qty').value='';
+    document.getElementById('out-to').value='';
+    document.getElementById('out-purpose').value='';
+    document.getElementById('out-by').value='';
+    document.getElementById('out-remarks').value='';
+    fillOutwardMeta();
+    toast('Issuance entry saved!');
+  } catch(e) { setError(); toast('Error saving. Check connection.', true); }
+};
+
+window.deleteTx = async function(key) {
+  if(!confirm('Delete this transaction entry?')) return;
+  setSyncing();
+  try { await remove(ref(db,`transactions/${key}`)); toast('Entry deleted.'); renderLedger(); }
+  catch(e) { setError(); toast('Error deleting.', true); }
+};
+
+window.exportCSV = function() {
+  const headers = ['Date','Type','Material','In Qty','Out Qty','Unit','Received From','Issued To','Purpose','Issued By','Challan No','Remarks'];
+  const rows = Object.values(transactions).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>[
+    t.date, typeLabels[t.type]||t.type, t.material,
+    t.direction==='in'?t.qty:'', t.direction==='out'?t.qty:'',
+    t.unit||'', t.direction==='in'?t.person||'':'', t.direction==='out'?t.person||'':'',
+    t.purpose||'', t.issuedBy||'', t.challan||'', t.remarks||''
+  ]);
+  const csv = [headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`stock_register_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+};
+
+const activeTab = { current: 'dashboard' };
+window.showTab = function(t) {
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['dashboard','inward','outward','ledger','balances','materials'][i]===t));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  activeTab.current = t;
+  populateDropdowns();
+  if(t==='dashboard') renderDashboard();
+  if(t==='ledger') renderLedger();
+  if(t==='balances') renderBalances();
+  if(t==='materials') renderMaterials();
+};
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('in-date').value = today;
+document.getElementById('out-date').value = today;
+
+onValue(ref(db,'materials'), snap => {
+  materials = snap.val() || {};
+  populateDropdowns();
+  if(activeTab.current==='dashboard') renderDashboard();
+  if(activeTab.current==='balances') renderBalances();
+  if(activeTab.current==='materials') renderMaterials();
+  setSynced();
+}, e => { setError(); });
+
+onValue(ref(db,'transactions'), snap => {
+  transactions = snap.val() || {};
+  if(activeTab.current==='dashboard') renderDashboard();
+  if(activeTab.current==='ledger') renderLedger();
+  if(activeTab.current==='balances') renderBalances();
+  setSynced();
+}, e => { setError(); });
+
+</script>
+</body>
+</html>
