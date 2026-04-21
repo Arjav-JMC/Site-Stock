@@ -7,43 +7,65 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #F5F3EE;
-  --surface: #FFFFFF;
-  --border: #D8D4CB;
-  --border-strong: #B8B2A7;
-  --text: #1A1814;
-  --text-muted: #6B6760;
-  --text-faint: #9E9A94;
-  --accent: #C84B2F;
-  --accent-light: #F5EAE6;
-  --green: #2E7D52;
-  --green-light: #E8F5EE;
-  --amber: #B45309;
-  --amber-light: #FEF3C7;
-  --blue: #1D4ED8;
-  --blue-light: #EFF6FF;
-  --purple: #6D28D9;
-  --purple-light: #F5F3FF;
-  --pink: #BE185D;
-  --pink-light: #FDF2F8;
-  --font: 'IBM Plex Sans', sans-serif;
-  --mono: 'IBM Plex Mono', monospace;
-  --radius: 6px;
-  --radius-lg: 10px;
+  --bg: #F5F3EE; --surface: #FFFFFF; --border: #D8D4CB; --border-strong: #B8B2A7;
+  --text: #1A1814; --text-muted: #6B6760; --text-faint: #9E9A94;
+  --accent: #C84B2F; --accent-light: #F5EAE6;
+  --green: #2E7D52; --green-light: #E8F5EE;
+  --amber: #B45309; --amber-light: #FEF3C7;
+  --blue: #1D4ED8; --blue-light: #EFF6FF;
+  --purple: #6D28D9; --purple-light: #F5F3FF;
+  --pink: #BE185D; --pink-light: #FDF2F8;
+  --font: 'IBM Plex Sans', sans-serif; --mono: 'IBM Plex Mono', monospace;
+  --radius: 6px; --radius-lg: 10px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
 
+/* Login */
+.login-screen { position: fixed; inset: 0; background: var(--text); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+.login-box { background: var(--surface); border-radius: var(--radius-lg); padding: 2.5rem; width: 100%; max-width: 380px; margin: 1rem; text-align: center; }
+.login-logo { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.08em; color: var(--text); margin-bottom: 6px; }
+.login-logo span { color: var(--accent); }
+.login-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6; }
+.login-denied { font-size: 13px; color: var(--accent); background: var(--accent-light); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 1.5rem; display: none; }
+.google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); font-family: var(--font); font-size: 14px; font-weight: 500; color: #3c4043; cursor: pointer; transition: background 0.15s; }
+.google-btn:hover { background: #f8f8f8; }
+.hidden { display: none !important; }
+
+/* Site selector screen */
+.site-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; }
+.site-screen-box { background: var(--surface); border-radius: var(--radius-lg); padding: 2rem; width: 100%; max-width: 520px; margin: 1rem; border: 1px solid var(--border); }
+.site-screen-title { font-family: var(--mono); font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.site-screen-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 1.5rem; }
+.site-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+.site-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s; }
+.site-item:hover { border-color: var(--text); background: var(--bg); }
+.site-item-name { font-weight: 500; font-size: 14px; }
+.site-item-loc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.site-item-arrow { color: var(--text-faint); font-size: 18px; }
+.site-divider { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+.site-divider-line { flex: 1; height: 1px; background: var(--border); }
+.site-divider-text { font-size: 11px; color: var(--text-faint); font-family: var(--mono); }
+.add-site-form { display: flex; flex-direction: column; gap: 10px; }
+.add-site-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.summary-link { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 1px dashed var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; margin-bottom: 1rem; }
+.summary-link:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
 /* Header */
 .header { background: var(--text); color: #fff; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
-.header-left { display: flex; align-items: center; gap: 16px; }
+.header-left { display: flex; align-items: center; gap: 12px; }
 .logo { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.08em; color: #fff; }
 .logo span { color: var(--accent); }
-.site-badge { font-size: 11px; background: rgba(255,255,255,0.12); padding: 3px 10px; border-radius: 20px; color: rgba(255,255,255,0.7); font-family: var(--mono); }
+.site-badge { font-size: 11px; background: rgba(255,255,255,0.12); padding: 3px 10px; border-radius: 20px; color: rgba(255,255,255,0.7); font-family: var(--mono); cursor: pointer; transition: background 0.15s; }
+.site-badge:hover { background: rgba(255,255,255,0.22); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.user-info { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.5); }
 .sync-status { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
 .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; }
 .sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
 .sync-dot.error { background: var(--accent); }
+.signout-btn { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.5); background: none; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; padding: 4px 10px; border-radius: var(--radius); }
+.signout-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
 /* Nav */
@@ -83,8 +105,7 @@ input[readonly] { color: var(--text-muted); cursor: default; }
 .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: var(--radius); font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
 .btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
 .btn-primary:hover { background: #333; }
-.btn-secondary { background: transparent; color: var(--text); border-color: var(--border-strong); }
-.btn-secondary:hover { background: var(--bg); }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
 .btn-danger { background: transparent; color: var(--accent); border-color: #ECC; font-size: 12px; padding: 4px 10px; }
 .btn-danger:hover { background: var(--accent-light); }
 .btn-export { background: var(--green); color: #fff; border-color: var(--green); font-size: 12px; padding: 6px 14px; }
@@ -108,18 +129,22 @@ tr:hover td { background: var(--bg); }
 .b-issue { background: var(--accent-light); color: var(--accent); }
 .b-ok { background: var(--green-light); color: var(--green); }
 .b-low { background: #FEE2E2; color: #B91C1C; }
+.b-zero { background: #F1F1F1; color: #888; }
 
 /* Alert */
 .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 .alert-low { background: #FEE2E2; border: 1px solid #FECACA; color: #B91C1C; }
-.alert-info { background: var(--blue-light); border: 1px solid #BFDBFE; color: var(--blue); }
 
 /* Filter bar */
 .filter-bar { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
 .filter-bar input, .filter-bar select { width: auto; flex: 1; min-width: 140px; font-size: 13px; }
 
+/* Summary table site columns */
+.site-col-header { font-size: 10px; text-align: center; padding: 6px 8px; }
+.site-col-cell { text-align: center; font-family: var(--mono); font-size: 12px; }
+
 /* Toast */
-.toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--text); color: #fff; padding: 12px 20px; border-radius: var(--radius-lg); font-size: 13px; font-weight: 500; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+.toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--text); color: #fff; padding: 12px 20px; border-radius: var(--radius-lg); font-size: 13px; font-weight: 500; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.3s; pointer-events: none; max-width: 300px; }
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast.error { background: var(--accent); }
 
@@ -134,19 +159,89 @@ tr:hover td { background: var(--bg); }
   .metrics-grid { grid-template-columns: 1fr 1fr; }
   .header { padding: 0 1rem; }
   .nav { padding: 0 1rem; }
+  .user-info { display: none; }
+  .add-site-row { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 
+<!-- Login Screen -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">JMC<span>.</span>STOCK</div>
+    <div class="login-sub">Site Stock Register<br>Sign in with your approved Google account to continue.</div>
+    <div class="login-denied" id="login-denied">Access denied. Your Google account is not authorised. Please contact the site manager.</div>
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 48 48" style="width:18px;height:18px;flex-shrink:0"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+</div>
+
+<!-- Site Selector Screen -->
+<div class="site-screen hidden" id="site-screen">
+  <div class="site-screen-box">
+    <div class="site-screen-title">JMC<span style="color:var(--accent)">.</span>STOCK</div>
+    <div class="site-screen-sub">Select a site to manage its stock, or view the cross-site summary.</div>
+
+    <div class="summary-link" onclick="openSummary()">
+      &#9776; View cross-site material summary
+    </div>
+
+    <div class="site-list" id="site-list">
+      <div class="loader"><div class="spinner"></div>Loading sites...</div>
+    </div>
+
+    <div class="site-divider">
+      <div class="site-divider-line"></div>
+      <div class="site-divider-text">ADD NEW SITE</div>
+      <div class="site-divider-line"></div>
+    </div>
+    <div class="add-site-form">
+      <div class="add-site-row">
+        <div class="form-group" style="margin:0"><label>Site name</label><input type="text" id="new-site-name" placeholder="e.g. Block A, Sector 12"></div>
+        <div class="form-group" style="margin:0"><label>Location</label><input type="text" id="new-site-location" placeholder="e.g. Noida, Delhi"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addSite()">Add Site</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cross-site Summary Screen -->
+<div class="site-screen hidden" id="summary-screen">
+  <div style="background:var(--surface);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:900px;margin:1rem;border:1px solid var(--border);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      <div>
+        <div style="font-family:var(--mono);font-size:14px;font-weight:500;">Cross-site material summary</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">Material balances across all sites</div>
+      </div>
+      <button class="btn btn-sm" style="border-color:var(--border)" onclick="closeSummary()">← Back to sites</button>
+    </div>
+    <div class="table-wrap">
+      <table id="summary-table">
+        <thead id="summary-thead"></thead>
+        <tbody id="summary-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app-wrapper" class="hidden">
+
 <div class="header">
   <div class="header-left">
     <div class="logo">JMC<span>.</span>STOCK</div>
-    <div class="site-badge">Site Register v1.0</div>
+    <div class="site-badge" id="active-site-badge" onclick="goBackToSites()">— select site ▾</div>
   </div>
-  <div class="sync-status">
-    <div class="sync-dot" id="sync-dot"></div>
-    <span id="sync-text">Connected</span>
+  <div class="header-right">
+    <div class="user-info" id="user-info"></div>
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-text">Connected</span>
+    </div>
+    <button class="signout-btn" onclick="doSignOut()">Sign out</button>
   </div>
 </div>
 
@@ -270,7 +365,7 @@ tr:hover td { background: var(--bg); }
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Person / Source</th><th>Issued To</th><th>Purpose</th><th>Challan</th><th>Remarks</th><th>Del</th></tr></thead>
+          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Received From</th><th>Issued To</th><th>Purpose</th><th>Challan</th><th>Remarks</th><th>Del</th></tr></thead>
           <tbody id="ledger-body"></tbody>
         </table>
       </div>
@@ -323,13 +418,14 @@ tr:hover td { background: var(--bg); }
   </div>
 
 </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, set, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, remove, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut as fbSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB05ohXzOHY9hwa10mqdpHUNpU_lI2W8wc",
@@ -337,19 +433,27 @@ const firebaseConfig = {
   databaseURL: "https://kasa-isle-stock-default-rtdb.firebaseio.com",
   projectId: "kasa-isle-stock",
   storageBucket: "kasa-isle-stock.firebasestorage.app",
-  messagingSenderId: "537720610907",
+  messagingSenderId: "537720610807",
   appId: "1:537720610907:web:2d5ea5bcbf5075dd23df7e"
 };
 
+const ALLOWED_EMAILS = ['aarjav2003@gmail.com','jmcinfratech@gmail.com','tlkraj343@gmail.com'];
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
+let allSites = {};
+let allSitesData = {};
+let currentSiteKey = null;
 let materials = {};
 let transactions = {};
+let materialUnsub = null;
+let txUnsub = null;
 
 const syncDot = document.getElementById('sync-dot');
 const syncText = document.getElementById('sync-text');
-
 function setSyncing() { syncDot.className='sync-dot syncing'; syncText.textContent='Syncing...'; }
 function setSynced() { syncDot.className='sync-dot'; syncText.textContent='Connected'; }
 function setError() { syncDot.className='sync-dot error'; syncText.textContent='Error'; }
@@ -358,9 +462,222 @@ function toast(msg, isError=false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast show' + (isError?' error':'');
-  setTimeout(()=>t.className='toast', 2800);
+  setTimeout(()=>t.className='toast', 3000);
 }
 
+// AUTH
+window.signInWithGoogle = async function() {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    if(!ALLOWED_EMAILS.includes(result.user.email)) {
+      await fbSignOut(auth);
+      document.getElementById('login-denied').style.display = 'block';
+    }
+  } catch(e) { console.error(e); }
+};
+
+window.doSignOut = async function() {
+  if(confirm('Sign out?')) { await fbSignOut(auth); }
+};
+
+onAuthStateChanged(auth, user => {
+  if(user && ALLOWED_EMAILS.includes(user.email)) {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('user-info').textContent = user.email;
+    initSites();
+  } else {
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('site-screen').classList.add('hidden');
+    document.getElementById('app-wrapper').classList.add('hidden');
+    document.getElementById('summary-screen').classList.add('hidden');
+  }
+});
+
+// SITES
+function initSites() {
+  onValue(ref(db, 'sites'), snap => {
+    allSites = snap.val() || {};
+    renderSiteList();
+    loadAllSitesData();
+  }, () => setError());
+  document.getElementById('site-screen').classList.remove('hidden');
+}
+
+function renderSiteList() {
+  const list = document.getElementById('site-list');
+  const keys = Object.keys(allSites);
+  if(!keys.length) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--text-faint);padding:1rem 0;">No sites yet. Add your first site below.</div>';
+    return;
+  }
+  list.innerHTML = keys.map(k => {
+    const s = allSites[k];
+    return `<div class="site-item" onclick="selectSite('${k}')">
+      <div>
+        <div class="site-item-name">${s.name}</div>
+        ${s.location ? `<div class="site-item-loc">${s.location}</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn btn-danger" style="padding:3px 8px;font-size:11px;" onclick="event.stopPropagation();deleteSite('${k}','${s.name.replace(/'/g,"\\'")}')">Del</button>
+        <span class="site-item-arrow">›</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.addSite = async function() {
+  const name = document.getElementById('new-site-name').value.trim();
+  const location = document.getElementById('new-site-location').value.trim();
+  if(!name) { toast('Please enter a site name.', true); return; }
+  await push(ref(db,'sites'), { name, location: location||'' });
+  document.getElementById('new-site-name').value = '';
+  document.getElementById('new-site-location').value = '';
+  toast('Site added!');
+};
+
+window.deleteSite = async function(key, name) {
+  if(!confirm(`Delete site "${name}"? All its materials and transactions will also be deleted.`)) return;
+  await remove(ref(db, `sites/${key}`));
+  await remove(ref(db, `materials/${key}`));
+  await remove(ref(db, `transactions/${key}`));
+  toast('Site deleted.');
+};
+
+window.selectSite = function(key) {
+  currentSiteKey = key;
+  const site = allSites[key];
+  document.getElementById('active-site-badge').textContent = site.name + (site.location ? ` — ${site.location}` : '') + ' ▾';
+  document.getElementById('site-screen').classList.add('hidden');
+  document.getElementById('app-wrapper').classList.remove('hidden');
+  loadSiteData(key);
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('in-date').value = today;
+  document.getElementById('out-date').value = today;
+  showTab('dashboard');
+};
+
+window.goBackToSites = function() {
+  document.getElementById('app-wrapper').classList.add('hidden');
+  document.getElementById('site-screen').classList.remove('hidden');
+  if(materialUnsub) { materialUnsub(); materialUnsub = null; }
+  if(txUnsub) { txUnsub(); txUnsub = null; }
+  currentSiteKey = null;
+  materials = {};
+  transactions = {};
+};
+
+function loadSiteData(siteKey) {
+  if(materialUnsub) materialUnsub();
+  if(txUnsub) txUnsub();
+
+  materialUnsub = onValue(ref(db, `materials/${siteKey}`), snap => {
+    materials = snap.val() || {};
+    populateDropdowns();
+    if(activeTab.current==='dashboard') renderDashboard();
+    if(activeTab.current==='balances') renderBalances();
+    if(activeTab.current==='materials') renderMaterials();
+    setSynced();
+  }, ()=>setError());
+
+  txUnsub = onValue(ref(db, `transactions/${siteKey}`), snap => {
+    transactions = snap.val() || {};
+    if(activeTab.current==='dashboard') renderDashboard();
+    if(activeTab.current==='ledger') renderLedger();
+    if(activeTab.current==='balances') renderBalances();
+    setSynced();
+  }, ()=>setError());
+}
+
+// CROSS-SITE SUMMARY
+function loadAllSitesData() {
+  Object.keys(allSites).forEach(siteKey => {
+    onValue(ref(db, `materials/${siteKey}`), snap => {
+      if(!allSitesData[siteKey]) allSitesData[siteKey] = {};
+      allSitesData[siteKey].materials = snap.val() || {};
+    });
+    onValue(ref(db, `transactions/${siteKey}`), snap => {
+      if(!allSitesData[siteKey]) allSitesData[siteKey] = {};
+      allSitesData[siteKey].transactions = snap.val() || {};
+    });
+  });
+}
+
+function getSiteBalance(siteKey, matName) {
+  const txs = (allSitesData[siteKey] && allSitesData[siteKey].transactions) ? Object.values(allSitesData[siteKey].transactions) : [];
+  let inn=0, out=0;
+  txs.forEach(tx => {
+    if(tx.material !== matName) return;
+    if(tx.direction==='in') inn += parseFloat(tx.qty)||0;
+    else out += parseFloat(tx.qty)||0;
+  });
+  return inn - out;
+}
+
+window.openSummary = function() {
+  document.getElementById('site-screen').classList.add('hidden');
+  document.getElementById('summary-screen').classList.remove('hidden');
+  renderSummary();
+};
+
+window.closeSummary = function() {
+  document.getElementById('summary-screen').classList.add('hidden');
+  document.getElementById('site-screen').classList.remove('hidden');
+};
+
+function renderSummary() {
+  const siteKeys = Object.keys(allSites);
+  if(!siteKeys.length) {
+    document.getElementById('summary-thead').innerHTML = '';
+    document.getElementById('summary-tbody').innerHTML = '<tr class="empty-row"><td colspan="3">No sites added yet.</td></tr>';
+    return;
+  }
+
+  // Collect all unique materials across all sites
+  const allMaterials = new Map();
+  siteKeys.forEach(sk => {
+    const mats = (allSitesData[sk] && allSitesData[sk].materials) ? Object.values(allSitesData[sk].materials) : [];
+    mats.forEach(m => {
+      if(!allMaterials.has(m.name)) allMaterials.set(m.name, m.unit||'');
+    });
+  });
+
+  if(!allMaterials.size) {
+    document.getElementById('summary-thead').innerHTML = '';
+    document.getElementById('summary-tbody').innerHTML = '<tr class="empty-row"><td colspan="3">No materials recorded across any site yet.</td></tr>';
+    return;
+  }
+
+  // Build header
+  const thead = document.getElementById('summary-thead');
+  thead.innerHTML = `<tr>
+    <th>Material</th>
+    <th>Unit</th>
+    ${siteKeys.map(sk=>`<th class="site-col-header">${allSites[sk].name}${allSites[sk].location?'<br><span style="font-weight:400;color:var(--text-faint)">'+allSites[sk].location+'</span>':''}</th>`).join('')}
+    <th class="site-col-header" style="background:var(--bg)">Total</th>
+  </tr>`;
+
+  // Build rows
+  const sortedMats = [...allMaterials.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+  const tbody = document.getElementById('summary-tbody');
+  tbody.innerHTML = sortedMats.map(([matName, unit]) => {
+    let total = 0;
+    const cells = siteKeys.map(sk => {
+      const bal = getSiteBalance(sk, matName);
+      total += bal;
+      const cls = bal <= 0 ? 'b-zero' : 'b-ok';
+      return `<td class="site-col-cell"><span class="badge ${cls}">${bal.toFixed(1)}</span></td>`;
+    }).join('');
+    const totalCls = total <= 0 ? 'b-zero' : 'b-ok';
+    return `<tr>
+      <td><strong>${matName}</strong></td>
+      <td style="color:var(--text-muted)">${unit}</td>
+      ${cells}
+      <td class="site-col-cell" style="background:var(--bg)"><span class="badge ${totalCls}" style="font-size:11px">${total.toFixed(1)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// STOCK LOGIC
 const typeLabels = { hq:'HQ Supply', purchase:'Site Purchase', client:'Client Issue', transfer:'Contractor Transfer', return:'Return', issue:'Issued Out' };
 const typeBadge = { hq:'b-hq', purchase:'b-purchase', client:'b-client', transfer:'b-transfer', return:'b-return', issue:'b-issue' };
 
@@ -397,8 +714,8 @@ window.fillOutwardMeta = function() {
     const {bal} = getBalance(name);
     document.getElementById('out-avail').value = bal.toFixed(2) + ' ' + m.unit;
   } else {
-    document.getElementById('out-unit').value = '';
-    document.getElementById('out-avail').value = '';
+    document.getElementById('out-unit').value='';
+    document.getElementById('out-avail').value='';
   }
 };
 
@@ -408,7 +725,6 @@ function renderDashboard() {
   const totalTx = txArr.length;
   const totalIn = txArr.filter(t=>t.direction==='in').reduce((s,t)=>s+(parseFloat(t.qty)||0),0);
   const totalOut = txArr.filter(t=>t.direction==='out').reduce((s,t)=>s+(parseFloat(t.qty)||0),0);
-
   document.getElementById('metrics-grid').innerHTML = `
     <div class="metric"><div class="metric-label">Materials Tracked</div><div class="metric-value">${totalMats}</div></div>
     <div class="metric"><div class="metric-label">Total Transactions</div><div class="metric-value">${totalTx}</div></div>
@@ -417,15 +733,15 @@ function renderDashboard() {
 
   let alerts = '';
   Object.values(materials).forEach(m => {
-    if(!m.min || m.min<=0) return;
+    if(!m.min||m.min<=0) return;
     const {bal} = getBalance(m.name);
-    if(bal <= m.min) alerts += `<div class="alert alert-low">⚠ Low stock: <strong>${m.name}</strong> — balance ${bal.toFixed(2)} ${m.unit} (min: ${m.min})</div>`;
+    if(bal<=m.min) alerts += `<div class="alert alert-low">⚠ Low stock: <strong>${m.name}</strong> — balance ${bal.toFixed(2)} ${m.unit} (min: ${m.min})</div>`;
   });
-  document.getElementById('low-alerts').innerHTML = alerts || '';
+  document.getElementById('low-alerts').innerHTML = alerts;
 
-  const recent = txArr.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);
+  const recent = [...txArr].sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,10);
   const tbody = document.getElementById('recent-body');
-  if(!recent.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions yet. Start by adding materials and recording entries.</td></tr>'; return; }
+  if(!recent.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions yet for this site.</td></tr>'; return; }
   tbody.innerHTML = recent.map(t=>`<tr>
     <td style="font-family:var(--mono);font-size:12px">${t.date}</td>
     <td><span class="badge ${typeBadge[t.type]||''}">${typeLabels[t.type]||t.type}</span></td>
@@ -443,7 +759,7 @@ window.renderLedger = function() {
   const ftype = document.getElementById('f-type').value;
   const fmat = document.getElementById('f-mat').value;
   let txs = Object.entries(transactions).map(([k,v])=>({...v,_key:k})).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  if(txt) txs = txs.filter(t=>(t.material+t.person+t.purpose+t.challan+t.remarks+t.issuedBy+'').toLowerCase().includes(txt));
+  if(txt) txs = txs.filter(t=>(t.material+t.person+t.purpose+t.challan+t.remarks+'').toLowerCase().includes(txt));
   if(ftype) txs = txs.filter(t=>t.type===ftype);
   if(fmat) txs = txs.filter(t=>t.material===fmat);
   const tbody = document.getElementById('ledger-body');
@@ -496,6 +812,7 @@ function renderMaterials() {
 }
 
 window.addMaterial = async function() {
+  if(!currentSiteKey) { toast('No site selected.', true); return; }
   const name = document.getElementById('mat-name').value.trim();
   const unit = document.getElementById('mat-unit').value;
   const min = parseFloat(document.getElementById('mat-min').value)||0;
@@ -503,21 +820,22 @@ window.addMaterial = async function() {
   if(Object.values(materials).find(m=>m.name===name)) { toast('Material already exists.', true); return; }
   setSyncing();
   try {
-    await push(ref(db,'materials'), { name, unit, min });
+    await push(ref(db,`materials/${currentSiteKey}`), { name, unit, min });
     document.getElementById('mat-name').value='';
     document.getElementById('mat-min').value='';
     toast('Material added!');
-  } catch(e) { setError(); toast('Error saving. Check connection.', true); }
+  } catch(e) { setError(); toast('Error saving.', true); }
 };
 
 window.deleteMaterial = async function(key, name) {
   if(!confirm(`Delete "${name}"? Transaction history will be kept.`)) return;
   setSyncing();
-  try { await remove(ref(db,`materials/${key}`)); toast('Material deleted.'); }
+  try { await remove(ref(db,`materials/${currentSiteKey}/${key}`)); toast('Material deleted.'); }
   catch(e) { setError(); toast('Error deleting.', true); }
 };
 
 window.saveInward = async function() {
+  if(!currentSiteKey) { toast('No site selected.', true); return; }
   const date = document.getElementById('in-date').value;
   const type = document.getElementById('in-type').value;
   let material = document.getElementById('in-material').value;
@@ -530,29 +848,29 @@ window.saveInward = async function() {
 
   if(!date) { toast('Please select a date.', true); return; }
   if(!qty||qty<=0) { toast('Please enter a valid quantity.', true); return; }
-  if(!from) { toast('Please enter the received from name.', true); return; }
+  if(!from) { toast('Please enter received from name.', true); return; }
 
   setSyncing();
   try {
     if(newMat) {
       if(!Object.values(materials).find(m=>m.name===newMat)) {
-        await push(ref(db,'materials'), { name: newMat, unit, min: 0 });
+        await push(ref(db,`materials/${currentSiteKey}`), { name: newMat, unit, min: 0 });
       }
       material = newMat;
       document.getElementById('in-new-material').value='';
     }
     if(!material) { toast('Please select or enter a material.', true); setSynced(); return; }
-
-    await push(ref(db,'transactions'), { date, type, material, qty, unit, challan, person: from, remarks, direction:'in', ts: Date.now() });
+    await push(ref(db,`transactions/${currentSiteKey}`), { date, type, material, qty, unit, challan, person: from, remarks, direction:'in', ts: Date.now() });
     document.getElementById('in-qty').value='';
     document.getElementById('in-challan').value='';
     document.getElementById('in-from').value='';
     document.getElementById('in-remarks').value='';
     toast('Inward entry saved!');
-  } catch(e) { setError(); toast('Error saving. Check connection.', true); }
+  } catch(e) { setError(); toast('Error saving.', true); }
 };
 
 window.saveOutward = async function() {
+  if(!currentSiteKey) { toast('No site selected.', true); return; }
   const date = document.getElementById('out-date').value;
   const material = document.getElementById('out-material').value;
   const qty = parseFloat(document.getElementById('out-qty').value);
@@ -572,7 +890,7 @@ window.saveOutward = async function() {
 
   setSyncing();
   try {
-    await push(ref(db,'transactions'), { date, type:'issue', material, qty, unit, person: to, purpose, issuedBy: by, remarks, direction:'out', ts: Date.now() });
+    await push(ref(db,`transactions/${currentSiteKey}`), { date, type:'issue', material, qty, unit, person: to, purpose, issuedBy: by, remarks, direction:'out', ts: Date.now() });
     document.getElementById('out-qty').value='';
     document.getElementById('out-to').value='';
     document.getElementById('out-purpose').value='';
@@ -580,17 +898,19 @@ window.saveOutward = async function() {
     document.getElementById('out-remarks').value='';
     fillOutwardMeta();
     toast('Issuance entry saved!');
-  } catch(e) { setError(); toast('Error saving. Check connection.', true); }
+  } catch(e) { setError(); toast('Error saving.', true); }
 };
 
 window.deleteTx = async function(key) {
   if(!confirm('Delete this transaction entry?')) return;
   setSyncing();
-  try { await remove(ref(db,`transactions/${key}`)); toast('Entry deleted.'); renderLedger(); }
+  try { await remove(ref(db,`transactions/${currentSiteKey}/${key}`)); toast('Entry deleted.'); renderLedger(); }
   catch(e) { setError(); toast('Error deleting.', true); }
 };
 
 window.exportCSV = function() {
+  const site = currentSiteKey ? allSites[currentSiteKey] : null;
+  const siteName = site ? site.name : 'site';
   const headers = ['Date','Type','Material','In Qty','Out Qty','Unit','Received From','Issued To','Purpose','Issued By','Challan No','Remarks'];
   const rows = Object.values(transactions).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>[
     t.date, typeLabels[t.type]||t.type, t.material,
@@ -601,7 +921,10 @@ window.exportCSV = function() {
   const csv = [headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download=`stock_register_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+  const a = document.createElement('a');
+  a.href=url;
+  a.download=`stock_${siteName}_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
 };
 
 const activeTab = { current: 'dashboard' };
@@ -616,27 +939,6 @@ window.showTab = function(t) {
   if(t==='balances') renderBalances();
   if(t==='materials') renderMaterials();
 };
-
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('in-date').value = today;
-document.getElementById('out-date').value = today;
-
-onValue(ref(db,'materials'), snap => {
-  materials = snap.val() || {};
-  populateDropdowns();
-  if(activeTab.current==='dashboard') renderDashboard();
-  if(activeTab.current==='balances') renderBalances();
-  if(activeTab.current==='materials') renderMaterials();
-  setSynced();
-}, e => { setError(); });
-
-onValue(ref(db,'transactions'), snap => {
-  transactions = snap.val() || {};
-  if(activeTab.current==='dashboard') renderDashboard();
-  if(activeTab.current==='ledger') renderLedger();
-  if(activeTab.current==='balances') renderBalances();
-  setSynced();
-}, e => { setError(); });
 
 </script>
 </body>
