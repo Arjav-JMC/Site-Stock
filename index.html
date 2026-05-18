@@ -93,6 +93,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); font
 /* Forms */
 .form-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .form-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.form-grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; }
 .form-group { margin-bottom: 1rem; }
 .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; font-family: var(--mono); }
 input[type=text], input[type=number], input[type=date], select, textarea {
@@ -102,6 +103,12 @@ input[type=text], input[type=number], input[type=date], select, textarea {
 }
 input:focus, select:focus, textarea:focus { border-color: var(--text); background: #fff; }
 input[readonly] { color: var(--text-muted); cursor: default; }
+
+/* Amount input with ₹ prefix */
+.amount-wrap { position: relative; }
+.amount-wrap .currency-symbol { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text-muted); font-family: var(--mono); pointer-events: none; }
+.amount-wrap input { padding-left: 26px; }
+
 .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: var(--radius); font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
 .btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
 .btn-primary:hover { background: #333; }
@@ -156,6 +163,10 @@ tr:hover td { background: var(--bg); }
 .site-col-header { font-size: 10px; text-align: center; padding: 6px 8px; }
 .site-col-cell { text-align: center; font-family: var(--mono); font-size: 12px; }
 
+/* Amount styling */
+.amount-cell { font-family: var(--mono); font-size: 12px; color: var(--amber); font-weight: 500; white-space: nowrap; }
+.amount-cell.zero { color: var(--text-faint); }
+
 /* Toast */
 .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--text); color: #fff; padding: 12px 20px; border-radius: var(--radius-lg); font-size: 13px; font-weight: 500; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.3s; pointer-events: none; max-width: 300px; }
 .toast.show { transform: translateY(0); opacity: 1; }
@@ -168,7 +179,7 @@ tr:hover td { background: var(--bg); }
 
 @media (max-width: 640px) {
   .main { padding: 1rem; }
-  .form-grid2, .form-grid3 { grid-template-columns: 1fr; }
+  .form-grid2, .form-grid3, .form-grid4 { grid-template-columns: 1fr; }
   .metrics-grid { grid-template-columns: 1fr 1fr; }
   .header { padding: 0 1rem; }
   .nav { padding: 0 1rem; }
@@ -223,11 +234,11 @@ tr:hover td { background: var(--bg); }
 
 <!-- Cross-site Summary Screen -->
 <div class="site-screen hidden" id="summary-screen">
-  <div style="background:var(--surface);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:900px;margin:1rem;border:1px solid var(--border);max-height:90vh;overflow-y:auto;">
+  <div style="background:var(--surface);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:980px;margin:1rem;border:1px solid var(--border);max-height:90vh;overflow-y:auto;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
       <div>
         <div style="font-family:var(--mono);font-size:14px;font-weight:500;">Cross-site material summary</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">Material balances across all sites</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">Material balances and values across all sites</div>
       </div>
       <button class="btn btn-sm" style="border-color:var(--border)" onclick="closeSummary()">← Back to sites</button>
     </div>
@@ -277,8 +288,8 @@ tr:hover td { background: var(--bg); }
       <div class="card-title">Recent Transactions</div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Person / Source</th></tr></thead>
-          <tbody id="recent-body"><tr class="empty-row"><td colspan="7"><div class="loader"><div class="spinner"></div>Loading...</div></td></tr></tbody>
+          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Amount (₹)</th><th>Person / Source</th></tr></thead>
+          <tbody id="recent-body"><tr class="empty-row"><td colspan="8"><div class="loader"><div class="spinner"></div>Loading...</div></td></tr></tbody>
         </table>
       </div>
       <div class="pagination-bar" id="recent-pagination"></div>
@@ -309,7 +320,7 @@ tr:hover td { background: var(--bg); }
           <input type="text" id="in-new-material" placeholder="e.g. OPC Cement 53 Grade, JCB Machine">
         </div>
       </div>
-      <div class="form-grid3">
+      <div class="form-grid4">
         <div class="form-group"><label>Quantity</label><input type="number" id="in-qty" min="0" step="any" placeholder="0"></div>
         <div class="form-group"><label>Unit</label>
           <select id="in-unit">
@@ -317,6 +328,9 @@ tr:hover td { background: var(--bg); }
             <option>sqft</option><option>sqm</option><option>rft</option><option>litre</option>
             <option>cum</option><option>cft</option><option>set</option><option>lot</option><option>mtr</option><option>roll</option><option>pair</option>
           </select>
+        </div>
+        <div class="form-group"><label>Amount (₹)</label>
+          <div class="amount-wrap"><span class="currency-symbol">₹</span><input type="number" id="in-amount" min="0" step="any" placeholder="0.00"></div>
         </div>
         <div class="form-group"><label>Challan / Invoice No.</label><input type="text" id="in-challan" placeholder="optional"></div>
       </div>
@@ -338,9 +352,12 @@ tr:hover td { background: var(--bg); }
           <select id="out-material" onchange="fillOutwardMeta()"><option value="">— select —</option></select>
         </div>
       </div>
-      <div class="form-grid3">
+      <div class="form-grid4">
         <div class="form-group"><label>Quantity to issue</label><input type="number" id="out-qty" min="0" step="any" placeholder="0"></div>
         <div class="form-group"><label>Unit</label><input type="text" id="out-unit" readonly placeholder="auto"></div>
+        <div class="form-group"><label>Amount (₹)</label>
+          <div class="amount-wrap"><span class="currency-symbol">₹</span><input type="number" id="out-amount" min="0" step="any" placeholder="0.00"></div>
+        </div>
         <div class="form-group"><label>Available balance</label><input type="text" id="out-avail" readonly placeholder="select material"></div>
       </div>
       <div class="form-grid2">
@@ -386,7 +403,7 @@ tr:hover td { background: var(--bg); }
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Received From</th><th>Issued To</th><th>Purpose</th><th>Challan</th><th>Remarks</th><th>Del</th></tr></thead>
+          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Amount (₹)</th><th>Received From</th><th>Issued To</th><th>Purpose</th><th>Challan</th><th>Remarks</th><th>Del</th></tr></thead>
           <tbody id="ledger-body"></tbody>
         </table>
       </div>
@@ -400,7 +417,7 @@ tr:hover td { background: var(--bg); }
       <div class="card-title">Material-wise Stock Balances</div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Material</th><th>Unit</th><th>Total Received</th><th>Total Issued</th><th>Balance</th><th>Min Level</th><th>Status</th></tr></thead>
+          <thead><tr><th>Material</th><th>Unit</th><th>Total Received</th><th>Total Issued</th><th>Balance</th><th>Inward Value (₹)</th><th>Issuance Value (₹)</th><th>Min Level</th><th>Status</th></tr></thead>
           <tbody id="balance-body"></tbody>
         </table>
       </div>
@@ -485,6 +502,12 @@ function toast(msg, isError=false) {
   t.textContent = msg;
   t.className = 'toast show' + (isError?' error':'');
   setTimeout(()=>t.className='toast', 3000);
+}
+
+// Format amount as Indian currency
+function fmtAmt(val) {
+  if(!val || val === 0) return '—';
+  return '₹' + parseFloat(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // AUTH
@@ -611,16 +634,23 @@ function loadSiteData(siteKey) {
 }
 
 // CROSS-SITE SUMMARY
+let allSiteUnsubs = [];
 function loadAllSitesData() {
+  // Unsubscribe previous listeners to prevent accumulation
+  allSiteUnsubs.forEach(fn => fn());
+  allSiteUnsubs = [];
+  // Clear stale data so deleted sites don't ghost
+  allSitesData = {};
   Object.keys(allSites).forEach(siteKey => {
-    onValue(ref(db, `materials/${siteKey}`), snap => {
+    const u1 = onValue(ref(db, `materials/${siteKey}`), snap => {
       if(!allSitesData[siteKey]) allSitesData[siteKey] = {};
       allSitesData[siteKey].materials = snap.val() || {};
     });
-    onValue(ref(db, `transactions/${siteKey}`), snap => {
+    const u2 = onValue(ref(db, `transactions/${siteKey}`), snap => {
       if(!allSitesData[siteKey]) allSitesData[siteKey] = {};
       allSitesData[siteKey].transactions = snap.val() || {};
     });
+    allSiteUnsubs.push(u1, u2);
   });
 }
 
@@ -633,6 +663,16 @@ function getSiteBalance(siteKey, matName) {
     else out += parseFloat(tx.qty)||0;
   });
   return inn - out;
+}
+
+function getSiteTotalAmount(siteKey, matName) {
+  const txs = (allSitesData[siteKey] && allSitesData[siteKey].transactions) ? Object.values(allSitesData[siteKey].transactions) : [];
+  let total = 0;
+  txs.forEach(tx => {
+    if(tx.material !== matName) return;
+    total += parseFloat(tx.amount)||0;
+  });
+  return total;
 }
 
 window.openSummary = function() {
@@ -654,7 +694,6 @@ function renderSummary() {
     return;
   }
 
-  // Collect all unique materials across all sites
   const allMaterials = new Map();
   siteKeys.forEach(sk => {
     const mats = (allSitesData[sk] && allSitesData[sk].materials) ? Object.values(allSitesData[sk].materials) : [];
@@ -669,32 +708,37 @@ function renderSummary() {
     return;
   }
 
-  // Build header
   const thead = document.getElementById('summary-thead');
   thead.innerHTML = `<tr>
     <th>Material</th>
     <th>Unit</th>
-    ${siteKeys.map(sk=>`<th class="site-col-header">${allSites[sk].name}${allSites[sk].location?'<br><span style="font-weight:400;color:var(--text-faint)">'+allSites[sk].location+'</span>':''}</th>`).join('')}
-    <th class="site-col-header" style="background:var(--bg)">Total</th>
+    ${siteKeys.map(sk=>`<th class="site-col-header">${allSites[sk].name}${allSites[sk].location?'<br><span style="font-weight:400;color:var(--text-faint)">'+allSites[sk].location+'</span>':''}<br><span style="font-weight:400;color:var(--amber);font-size:9px">Qty / Amt</span></th>`).join('')}
+    <th class="site-col-header" style="background:var(--bg)">Total Qty</th>
+    <th class="site-col-header" style="background:var(--bg)">Total Amt (₹)</th>
   </tr>`;
 
-  // Build rows
   const sortedMats = [...allMaterials.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
   const tbody = document.getElementById('summary-tbody');
   tbody.innerHTML = sortedMats.map(([matName, unit]) => {
-    let total = 0;
+    let totalQty = 0, totalAmt = 0;
     const cells = siteKeys.map(sk => {
       const bal = getSiteBalance(sk, matName);
-      total += bal;
+      const amt = getSiteTotalAmount(sk, matName);
+      totalQty += bal;
+      totalAmt += amt;
       const cls = bal <= 0 ? 'b-zero' : 'b-ok';
-      return `<td class="site-col-cell"><span class="badge ${cls}">${bal.toFixed(1)}</span></td>`;
+      return `<td class="site-col-cell">
+        <span class="badge ${cls}">${bal.toFixed(1)}</span>
+        ${amt>0?`<br><span style="font-size:10px;color:var(--amber);font-family:var(--mono)">₹${amt.toLocaleString('en-IN',{maximumFractionDigits:0})}</span>`:''}
+      </td>`;
     }).join('');
-    const totalCls = total <= 0 ? 'b-zero' : 'b-ok';
+    const totalCls = totalQty <= 0 ? 'b-zero' : 'b-ok';
     return `<tr>
       <td><strong>${matName}</strong></td>
       <td style="color:var(--text-muted)">${unit}</td>
       ${cells}
-      <td class="site-col-cell" style="background:var(--bg)"><span class="badge ${totalCls}" style="font-size:11px">${total.toFixed(1)}</span></td>
+      <td class="site-col-cell" style="background:var(--bg)"><span class="badge ${totalCls}" style="font-size:11px">${totalQty.toFixed(1)}</span></td>
+      <td class="site-col-cell" style="background:var(--bg);color:var(--amber);font-weight:600">${totalAmt>0?'₹'+totalAmt.toLocaleString('en-IN',{maximumFractionDigits:0}):'—'}</td>
     </tr>`;
   }).join('');
 }
@@ -704,13 +748,13 @@ const typeLabels = { hq:'HQ Supply', purchase:'Site Purchase', client:'Client Is
 const typeBadge = { hq:'b-hq', purchase:'b-purchase', client:'b-client', transfer:'b-transfer', return:'b-return', issue:'b-issue' };
 
 function getBalance(matName) {
-  let inn=0, out=0;
+  let inn=0, out=0, inAmt=0, outAmt=0;
   Object.values(transactions).forEach(tx => {
     if(tx.material !== matName) return;
-    if(tx.direction==='in') inn += parseFloat(tx.qty)||0;
-    else out += parseFloat(tx.qty)||0;
+    if(tx.direction==='in') { inn += parseFloat(tx.qty)||0; inAmt += parseFloat(tx.amount)||0; }
+    else { out += parseFloat(tx.qty)||0; outAmt += parseFloat(tx.amount)||0; }
   });
-  return { inn, out, bal: inn-out };
+  return { inn, out, bal: inn-out, inAmt, outAmt, totalAmt: inAmt+outAmt };
 }
 
 function populateDropdowns() {
@@ -733,8 +777,10 @@ window.fillOutwardMeta = function() {
   const m = Object.values(materials).find(x=>x.name===name);
   if(m) {
     document.getElementById('out-unit').value = m.unit;
-    const {bal} = getBalance(name);
-    document.getElementById('out-avail').value = bal.toFixed(2) + ' ' + m.unit;
+    const {bal, inAmt, inn} = getBalance(name);
+    const avgRate = (inn > 0 && inAmt > 0) ? (inAmt / inn) : 0;
+    const rateStr = avgRate > 0 ? `  (avg ₹${avgRate.toFixed(0)}/${m.unit})` : '';
+    document.getElementById('out-avail').value = bal.toFixed(2) + ' ' + m.unit + rateStr;
   } else {
     document.getElementById('out-unit').value='';
     document.getElementById('out-avail').value='';
@@ -747,11 +793,13 @@ function renderDashboard() {
   const totalTx = txArr.length;
   const totalIn = txArr.filter(t=>t.direction==='in').reduce((s,t)=>s+(parseFloat(t.qty)||0),0);
   const totalOut = txArr.filter(t=>t.direction==='out').reduce((s,t)=>s+(parseFloat(t.qty)||0),0);
+  const totalAmt = txArr.reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
   document.getElementById('metrics-grid').innerHTML = `
     <div class="metric"><div class="metric-label">Materials Tracked</div><div class="metric-value">${totalMats}</div></div>
     <div class="metric"><div class="metric-label">Total Transactions</div><div class="metric-value">${totalTx}</div></div>
     <div class="metric"><div class="metric-label">Units Received</div><div class="metric-value">${totalIn.toFixed(1)}</div><div class="metric-sub">across all materials</div></div>
-    <div class="metric"><div class="metric-label">Units Issued</div><div class="metric-value">${totalOut.toFixed(1)}</div><div class="metric-sub">from stockyard</div></div>`;
+    <div class="metric"><div class="metric-label">Units Issued</div><div class="metric-value">${totalOut.toFixed(1)}</div><div class="metric-sub">from stockyard</div></div>
+    <div class="metric"><div class="metric-label">Total Value (₹)</div><div class="metric-value" style="font-size:20px;color:var(--amber)">₹${totalAmt.toLocaleString('en-IN',{maximumFractionDigits:0})}</div><div class="metric-sub">all transactions</div></div>`;
 
   let alerts = '';
   Object.values(materials).forEach(m => {
@@ -766,7 +814,7 @@ function renderDashboard() {
   if(recentPage > totalRecentPages) recentPage = totalRecentPages;
   const recent = allRecent.slice((recentPage-1)*recentPageSize, recentPage*recentPageSize);
   const tbody = document.getElementById('recent-body');
-  if(!allRecent.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions yet for this site.</td></tr>';
+  if(!allRecent.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="8">No transactions yet for this site.</td></tr>';
     document.getElementById('recent-pagination').innerHTML=''; return; }
   tbody.innerHTML = recent.map(t=>`<tr>
     <td style="font-family:var(--mono);font-size:12px">${t.date}</td>
@@ -775,6 +823,7 @@ function renderDashboard() {
     <td style="color:var(--green);font-weight:500">${t.direction==='in'?t.qty:''}</td>
     <td style="color:var(--accent);font-weight:500">${t.direction==='out'?t.qty:''}</td>
     <td style="color:var(--text-muted)">${t.unit||''}</td>
+    <td class="amount-cell ${!t.amount?'zero':''}">${fmtAmt(t.amount)}</td>
     <td>${t.person||''}</td>
   </tr>`).join('');
   renderPagination('recent-pagination', recentPage, totalRecentPages,
@@ -791,7 +840,7 @@ window.renderLedger = function() {
   const ffrom = document.getElementById('f-from')?.value||'';
   const fto = document.getElementById('f-to')?.value||'';
   let txs = Object.entries(transactions).map(([k,v])=>({...v,_key:k})).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  if(txt) txs = txs.filter(t=>(t.material+t.person+t.purpose+t.challan+t.remarks+'').toLowerCase().includes(txt));
+  if(txt) txs = txs.filter(t=>(t.material+t.person+t.purpose+t.challan+t.remarks+(t.issuedBy||'')+'').toLowerCase().includes(txt));
   if(ftype) txs = txs.filter(t=>t.type===ftype);
   if(fmat) txs = txs.filter(t=>t.material===fmat);
   if(ffrom) txs = txs.filter(t=>t.date >= ffrom);
@@ -800,7 +849,7 @@ window.renderLedger = function() {
   if(ledgerPage > totalPages) ledgerPage = totalPages;
   const paged = txs.slice((ledgerPage-1)*ledgerPageSize, ledgerPage*ledgerPageSize);
   const tbody = document.getElementById('ledger-body');
-  if(!txs.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="12">No transactions found</td></tr>';
+  if(!txs.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="13">No transactions found</td></tr>';
     document.getElementById('ledger-pagination').innerHTML=''; return; }
   tbody.innerHTML = paged.map(t=>`<tr>
     <td style="font-family:var(--mono);font-size:11px;white-space:nowrap">${t.date}</td>
@@ -809,6 +858,7 @@ window.renderLedger = function() {
     <td style="color:var(--green);font-weight:500">${t.direction==='in'?t.qty:''}</td>
     <td style="color:var(--accent);font-weight:500">${t.direction==='out'?t.qty:''}</td>
     <td style="color:var(--text-muted)">${t.unit||''}</td>
+    <td class="amount-cell ${!t.amount?'zero':''}">${fmtAmt(t.amount)}</td>
     <td>${t.direction==='in'?t.person||'':''}</td>
     <td>${t.direction==='out'?t.person||'':''}</td>
     <td style="font-size:12px">${t.purpose||''}</td>
@@ -819,15 +869,15 @@ window.renderLedger = function() {
   renderPagination('ledger-pagination', ledgerPage, totalPages,
   'changeLedgerPage',
     ledgerPageSize,
-    'function(s){ledgerPageSize=parseInt(s);ledgerPage=1;renderLedger()}');
+    'changeLedgerPageSize');
 };
 
 function renderBalances() {
   const tbody = document.getElementById('balance-body');
   const mats = Object.values(materials);
-  if(!mats.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No materials added yet</td></tr>'; return; }
+  if(!mats.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="9">No materials added yet</td></tr>'; return; }
   tbody.innerHTML = mats.sort((a,b)=>a.name.localeCompare(b.name)).map(m=>{
-    const {inn,out,bal} = getBalance(m.name);
+    const {inn,out,bal,inAmt,outAmt} = getBalance(m.name);
     const low = m.min>0 && bal<=m.min;
     return `<tr>
       <td><strong>${m.name}</strong></td>
@@ -835,6 +885,8 @@ function renderBalances() {
       <td style="color:var(--green);font-weight:500">${inn.toFixed(2)}</td>
       <td style="color:var(--accent);font-weight:500">${out.toFixed(2)}</td>
       <td style="font-size:16px;font-weight:600;font-family:var(--mono);color:${low?'var(--accent)':'var(--text)'}">${bal.toFixed(2)}</td>
+      <td class="amount-cell ${inAmt===0?'zero':''}" style="font-size:13px">${fmtAmt(inAmt)}</td>
+      <td class="amount-cell ${outAmt===0?'zero':''}" style="font-size:13px">${fmtAmt(outAmt)}</td>
       <td style="color:var(--text-muted)">${m.min||'—'}</td>
       <td><span class="badge ${low?'b-low':'b-ok'}">${low?'LOW':'OK'}</span></td>
     </tr>`;
@@ -884,6 +936,7 @@ window.saveInward = async function() {
   const newMat = document.getElementById('in-new-material').value.trim();
   const qty = parseFloat(document.getElementById('in-qty').value);
   const unit = document.getElementById('in-unit').value;
+  const amount = parseFloat(document.getElementById('in-amount').value)||0;
   const challan = document.getElementById('in-challan').value.trim();
   const from = document.getElementById('in-from').value.trim();
   const remarks = document.getElementById('in-remarks').value.trim();
@@ -902,8 +955,9 @@ window.saveInward = async function() {
       document.getElementById('in-new-material').value='';
     }
     if(!material) { toast('Please select or enter a material.', true); setSynced(); return; }
-    await push(ref(db,`transactions/${currentSiteKey}`), { date, type, material, qty, unit, challan, person: from, remarks, direction:'in', ts: Date.now() });
+    await push(ref(db,`transactions/${currentSiteKey}`), { date, type, material, qty, unit, amount, challan, person: from, remarks, direction:'in', ts: Date.now() });
     document.getElementById('in-qty').value='';
+    document.getElementById('in-amount').value='';
     document.getElementById('in-challan').value='';
     document.getElementById('in-from').value='';
     document.getElementById('in-remarks').value='';
@@ -917,6 +971,7 @@ window.saveOutward = async function() {
   const material = document.getElementById('out-material').value;
   const qty = parseFloat(document.getElementById('out-qty').value);
   const unit = document.getElementById('out-unit').value;
+  const amount = parseFloat(document.getElementById('out-amount').value)||0;
   const to = document.getElementById('out-to').value.trim();
   const purpose = document.getElementById('out-purpose').value.trim();
   const by = document.getElementById('out-by').value.trim();
@@ -932,8 +987,9 @@ window.saveOutward = async function() {
 
   setSyncing();
   try {
-    await push(ref(db,`transactions/${currentSiteKey}`), { date, type:'issue', material, qty, unit, person: to, purpose, issuedBy: by, remarks, direction:'out', ts: Date.now() });
+    await push(ref(db,`transactions/${currentSiteKey}`), { date, type:'issue', material, qty, unit, amount, person: to, purpose, issuedBy: by, remarks, direction:'out', ts: Date.now() });
     document.getElementById('out-qty').value='';
+    document.getElementById('out-amount').value='';
     document.getElementById('out-to').value='';
     document.getElementById('out-purpose').value='';
     document.getElementById('out-by').value='';
@@ -946,18 +1002,24 @@ window.saveOutward = async function() {
 window.deleteTx = async function(key) {
   if(!confirm('Delete this transaction entry?')) return;
   setSyncing();
-  try { await remove(ref(db,`transactions/${currentSiteKey}/${key}`)); toast('Entry deleted.'); renderLedger(); }
-  catch(e) { setError(); toast('Error deleting.', true); }
+  try {
+    await remove(ref(db,`transactions/${currentSiteKey}/${key}`));
+    toast('Entry deleted.');
+    renderLedger();
+    renderDashboard();
+    renderBalances();
+  } catch(e) { setError(); toast('Error deleting.', true); }
 };
 
 window.exportCSV = function() {
   const site = currentSiteKey ? allSites[currentSiteKey] : null;
   const siteName = site ? site.name : 'site';
-  const headers = ['Date','Type','Material','In Qty','Out Qty','Unit','Received From','Issued To','Purpose','Issued By','Challan No','Remarks'];
+  const headers = ['Date','Type','Material','In Qty','Out Qty','Unit','Amount (Rs)','Received From','Issued To','Purpose','Issued By','Challan No','Remarks'];
   const rows = Object.values(transactions).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>[
     t.date, typeLabels[t.type]||t.type, t.material,
     t.direction==='in'?t.qty:'', t.direction==='out'?t.qty:'',
-    t.unit||'', t.direction==='in'?t.person||'':'', t.direction==='out'?t.person||'':'',
+    t.unit||'', t.amount||'',
+    t.direction==='in'?t.person||'':'', t.direction==='out'?t.person||'':'',
     t.purpose||'', t.issuedBy||'', t.challan||'', t.remarks||''
   ]);
   const csv = [headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
@@ -976,28 +1038,10 @@ const PAGE_SIZE_DEFAULT = 20;
 let ledgerPageSize = PAGE_SIZE_DEFAULT;
 let recentPageSize = PAGE_SIZE_DEFAULT;
 
-window.changeLedgerPage = function(p) {
-  ledgerPage = p;
-  renderLedger();
-};
-
-window.changeRecentPage = function(p) {
-  recentPage = p;
-  renderDashboard();
-};
-
-window.changeLedgerPageSize = function(s) {
-  ledgerPageSize = parseInt(s);
-  ledgerPage = 1;
-  renderLedger();
-};
-
-window.changeRecentPageSize = function(s) {
-  recentPageSize = parseInt(s);
-  recentPage = 1;
-  renderDashboard();
-};
-
+window.changeLedgerPage = function(p) { ledgerPage = p; renderLedger(); };
+window.changeRecentPage = function(p) { recentPage = p; renderDashboard(); };
+window.changeLedgerPageSize = function(s) { ledgerPageSize = parseInt(s); ledgerPage = 1; renderLedger(); };
+window.changeRecentPageSize = function(s) { recentPageSize = parseInt(s); recentPage = 1; renderDashboard(); };
 window.resetLedgerPage = function() { ledgerPage = 1; };
 window.clearDateRange = function() {
   document.getElementById('f-from').value = '';
@@ -1008,19 +1052,9 @@ window.clearDateRange = function() {
 
 function renderPagination(containerId, currentPage, totalPages, onPageChange, pageSize, onSizeChange) {
   const el = document.getElementById(containerId);
-
-  // Hide pagination if only 1 page
-  if (totalPages <= 1) {
-    el.innerHTML = '';
-    return;
-  }
-
-  const start = (currentPage - 1) * pageSize + 1;
-  const end = Math.min(currentPage * pageSize, totalPages * pageSize);
-
-  let pages = '';
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
   const delta = 2;
-
+  let pages = '';
   for (let i = 1; i <= totalPages; i++) {
     if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
       pages += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="${onPageChange}(${i})">${i}</button>`;
@@ -1028,25 +1062,23 @@ function renderPagination(containerId, currentPage, totalPages, onPageChange, pa
       pages += `<span style="color:var(--text-faint);padding:0 2px">…</span>`;
     }
   }
-
   el.innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;">
       <span class="pagination-info">Page ${currentPage} of ${totalPages}</span>
       <select class="page-size-select" onchange="${onSizeChange}(this.value)">
-        <option value="10" ${pageSize === 10 ? 'selected' : ''}>10/page</option>
-        <option value="20" ${pageSize === 20 ? 'selected' : ''}>20/page</option>
-        <option value="50" ${pageSize === 50 ? 'selected' : ''}>50/page</option>
-        <option value="100" ${pageSize === 100 ? 'selected' : ''}>100/page</option>
+        <option value="10" ${pageSize===10?'selected':''}>10/page</option>
+        <option value="20" ${pageSize===20?'selected':''}>20/page</option>
+        <option value="50" ${pageSize===50?'selected':''}>50/page</option>
+        <option value="100" ${pageSize===100?'selected':''}>100/page</option>
       </select>
     </div>
-
     <div class="pagination-controls">
-      <button class="page-btn" onclick="${onPageChange}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>
+      <button class="page-btn" onclick="${onPageChange}(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>
       ${pages}
-      <button class="page-btn" onclick="${onPageChange}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>›</button>
-    </div>
-  `;
+      <button class="page-btn" onclick="${onPageChange}(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>
+    </div>`;
 }
+
 const activeTab = { current: 'dashboard' };
 window.showTab = function(t) {
   document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['dashboard','inward','outward','ledger','balances','materials'][i]===t));
@@ -1059,7 +1091,6 @@ window.showTab = function(t) {
   if(t==='balances') renderBalances();
   if(t==='materials') renderMaterials();
 };
-
 </script>
 </body>
 </html>
