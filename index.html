@@ -1,636 +1,1065 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Material Inventory Management System</title>
-    <!-- Tailwind CSS for UI Layout -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Dashboard Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Stock Register — JMC</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F3EE; --surface: #FFFFFF; --border: #D8D4CB; --border-strong: #B8B2A7;
+  --text: #1A1814; --text-muted: #6B6760; --text-faint: #9E9A94;
+  --accent: #C84B2F; --accent-light: #F5EAE6;
+  --green: #2E7D52; --green-light: #E8F5EE;
+  --amber: #B45309; --amber-light: #FEF3C7;
+  --blue: #1D4ED8; --blue-light: #EFF6FF;
+  --purple: #6D28D9; --purple-light: #F5F3FF;
+  --pink: #BE185D; --pink-light: #FDF2F8;
+  --font: 'IBM Plex Sans', sans-serif; --mono: 'IBM Plex Mono', monospace;
+  --radius: 6px; --radius-lg: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; min-height: 100vh; }
+
+/* Login */
+.login-screen { position: fixed; inset: 0; background: var(--text); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+.login-box { background: var(--surface); border-radius: var(--radius-lg); padding: 2.5rem; width: 100%; max-width: 380px; margin: 1rem; text-align: center; }
+.login-logo { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0.08em; color: var(--text); margin-bottom: 6px; }
+.login-logo span { color: var(--accent); }
+.login-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6; }
+.login-denied { font-size: 13px; color: var(--accent); background: var(--accent-light); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 1.5rem; display: none; }
+.google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); font-family: var(--font); font-size: 14px; font-weight: 500; color: #3c4043; cursor: pointer; transition: background 0.15s; }
+.google-btn:hover { background: #f8f8f8; }
+.hidden { display: none !important; }
+
+/* Site selector screen */
+.site-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; }
+.site-screen-box { background: var(--surface); border-radius: var(--radius-lg); padding: 2rem; width: 100%; max-width: 520px; margin: 1rem; border: 1px solid var(--border); }
+.site-screen-title { font-family: var(--mono); font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.site-screen-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 1.5rem; }
+.site-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+.site-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s; }
+.site-item:hover { border-color: var(--text); background: var(--bg); }
+.site-item-name { font-weight: 500; font-size: 14px; }
+.site-item-loc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.site-item-arrow { color: var(--text-faint); font-size: 18px; }
+.site-divider { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+.site-divider-line { flex: 1; height: 1px; background: var(--border); }
+.site-divider-text { font-size: 11px; color: var(--text-faint); font-family: var(--mono); }
+.add-site-form { display: flex; flex-direction: column; gap: 10px; }
+.add-site-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.summary-link { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 1px dashed var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; margin-bottom: 1rem; }
+.summary-link:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+/* Header */
+.header { background: var(--text); color: #fff; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+.header-left { display: flex; align-items: center; gap: 12px; }
+.logo { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.08em; color: #fff; }
+.logo span { color: var(--accent); }
+.site-badge { font-size: 11px; background: rgba(255,255,255,0.12); padding: 3px 10px; border-radius: 20px; color: rgba(255,255,255,0.7); font-family: var(--mono); cursor: pointer; transition: background 0.15s; }
+.site-badge:hover { background: rgba(255,255,255,0.22); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.user-info { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.5); }
+.sync-status { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; }
+.sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
+.sync-dot.error { background: var(--accent); }
+.signout-btn { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.5); background: none; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; padding: 4px 10px; border-radius: var(--radius); }
+.signout-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Nav */
+.nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; gap: 0; overflow-x: auto; }
+.nav-btn { font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--text-muted); padding: 14px 18px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: color 0.15s; }
+.nav-btn:hover { color: var(--text); }
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Layout */
+.main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.25rem; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.25rem; font-family: var(--mono); }
+
+/* Metrics */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; }
+.metric-label { font-size: 11px; font-weight: 500; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--mono); }
+.metric-value { font-size: 28px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+.metric-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+/* Forms */
+.form-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; font-family: var(--mono); }
+input[type=text], input[type=number], input[type=date], select, textarea {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-family: var(--font); font-size: 14px; color: var(--text); background: var(--bg);
+  outline: none; transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--text); background: #fff; }
+input[readonly] { color: var(--text-muted); cursor: default; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: var(--radius); font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
+.btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
+.btn-primary:hover { background: #333; }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-danger { background: transparent; color: var(--accent); border-color: #ECC; font-size: 12px; padding: 4px 10px; }
+.btn-danger:hover { background: var(--accent-light); }
+.btn-export { background: var(--green); color: #fff; border-color: var(--green); font-size: 12px; padding: 6px 14px; }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { font-size: 10px; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; font-family: var(--mono); white-space: nowrap; }
+td { padding: 10px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+.empty-row td { text-align: center; color: var(--text-faint); padding: 3rem; font-size: 13px; }
+
+/* Badges */
+.badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; font-family: var(--mono); white-space: nowrap; letter-spacing: 0.04em; }
+.b-hq { background: var(--blue-light); color: var(--blue); }
+.b-purchase { background: var(--amber-light); color: var(--amber); }
+.b-client { background: var(--pink-light); color: var(--pink); }
+.b-transfer { background: var(--purple-light); color: var(--purple); }
+.b-return { background: var(--green-light); color: var(--green); }
+.b-issue { background: var(--accent-light); color: var(--accent); }
+.b-ok { background: var(--green-light); color: var(--green); }
+.b-low { background: #FEE2E2; color: #B91C1C; }
+.b-zero { background: #F1F1F1; color: #888; }
+
+/* Alert */
+.alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.alert-low { background: #FEE2E2; border: 1px solid #FECACA; color: #B91C1C; }
+
+/* Filter bar */
+.filter-bar { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+.filter-bar input, .filter-bar select { width: auto; flex: 1; min-width: 140px; font-size: 13px; }
+
+/* Pagination */
+.pagination-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; flex-wrap: wrap; gap: 8px; }
+.pagination-info { font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+.pagination-controls { display: flex; align-items: center; gap: 6px; }
+.page-btn { padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-size: 12px; font-family: var(--mono); color: var(--text-muted); cursor: pointer; transition: all 0.15s; min-width: 32px; text-align: center; }
+.page-btn:hover:not(:disabled) { border-color: var(--text); color: var(--text); }
+.page-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+.page-btn:disabled { opacity: 0.35; cursor: default; }
+.page-size-select { padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; font-family: var(--mono); color: var(--text-muted); background: var(--surface); cursor: pointer; }
+.date-range-bar { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+.date-range-bar input { width: auto; flex: 1; min-width: 130px; font-size: 13px; }
+.date-range-bar label { font-size: 11px; font-weight: 600; color: var(--text-muted); font-family: var(--mono); white-space: nowrap; }
+
+/* Summary table site columns */
+.site-col-header { font-size: 10px; text-align: center; padding: 6px 8px; }
+.site-col-cell { text-align: center; font-family: var(--mono); font-size: 12px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--text); color: #fff; padding: 12px 20px; border-radius: var(--radius-lg); font-size: 13px; font-weight: 500; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.3s; pointer-events: none; max-width: 300px; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { background: var(--accent); }
+
+/* Loader */
+.loader { display: flex; align-items: center; justify-content: center; padding: 4rem; color: var(--text-faint); font-size: 13px; font-family: var(--mono); gap: 10px; }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .main { padding: 1rem; }
+  .form-grid2, .form-grid3 { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+  .header { padding: 0 1rem; }
+  .nav { padding: 0 1rem; }
+  .user-info { display: none; }
+  .add-site-row { grid-template-columns: 1fr; }
+}
+</style>
 </head>
-<body class="bg-slate-100 font-sans antialiased text-slate-800">
+<body>
 
-    <!-- Top Navigation Bar -->
-    <nav class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-white text-indigo-900 p-2 rounded-lg shadow-inner">
-                        <i class="fa-solid fa-boxes-stacked text-xl"></i>
-                    </div>
-                    <div>
-                        <span class="font-bold text-lg tracking-tight block">MatTrack Pro</span>
-                        <span class="text-[10px] text-indigo-300 uppercase tracking-widest block font-medium">Enterprise Materials</span>
-                    </div>
-                </div>
-                <div class="flex space-x-2">
-                    <button id="nav-dashboard" onclick="switchTab('dashboard')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium bg-indigo-800 text-white transition-all duration-150">
-                        <i class="fa-solid fa-chart-pie mr-1.5"></i>Dashboard
-                    </button>
-                    <button id="nav-inward" onclick="switchTab('inward')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-indigo-200 hover:bg-indigo-800 hover:text-white transition-all duration-150">
-                        <i class="fa-solid fa-arrow-turn-down mr-1.5"></i>Record Inward
-                    </button>
-                    <button id="nav-issuance" onclick="switchTab('issuance')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-indigo-200 hover:bg-indigo-800 hover:text-white transition-all duration-150">
-                        <i class="fa-solid fa-arrow-turn-up mr-1.5"></i>Record Issuance
-                    </button>
-                    <button id="nav-ledger" onclick="switchTab('ledger')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-indigo-200 hover:bg-indigo-800 hover:text-white transition-all duration-150">
-                        <i class="fa-solid fa-list-check mr-1.5"></i>Ledger
-                    </button>
-                    <button id="nav-summary" onclick="switchTab('summary')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-indigo-200 hover:bg-indigo-800 hover:text-white transition-all duration-150">
-                        <i class="fa-solid fa-network-wired mr-1.5"></i>Cross-Site Summary
-                    </button>
-                </div>
-            </div>
+<!-- Login Screen -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">JMC<span>.</span>STOCK</div>
+    <div class="login-sub">Site Stock Register<br>Sign in with your approved Google account to continue.</div>
+    <div class="login-denied" id="login-denied">Access denied. Your Google account is not authorised. Please contact the site manager.</div>
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 48 48" style="width:18px;height:18px;flex-shrink:0"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+</div>
+
+<!-- Site Selector Screen -->
+<div class="site-screen hidden" id="site-screen">
+  <div class="site-screen-box">
+    <div class="site-screen-title">JMC<span style="color:var(--accent)">.</span>STOCK</div>
+    <div class="site-screen-sub">Select a site to manage its stock, or view the cross-site summary.</div>
+
+    <div class="summary-link" onclick="openSummary()">
+      &#9776; View cross-site material summary
+    </div>
+
+    <div class="site-list" id="site-list">
+      <div class="loader"><div class="spinner"></div>Loading sites...</div>
+    </div>
+
+    <div class="site-divider">
+      <div class="site-divider-line"></div>
+      <div class="site-divider-text">ADD NEW SITE</div>
+      <div class="site-divider-line"></div>
+    </div>
+    <div class="add-site-form">
+      <div class="add-site-row">
+        <div class="form-group" style="margin:0"><label>Site name</label><input type="text" id="new-site-name" placeholder="e.g. Block A, Sector 12"></div>
+        <div class="form-group" style="margin:0"><label>Location</label><input type="text" id="new-site-location" placeholder="e.g. Noida, Delhi"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addSite()">Add Site</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cross-site Summary Screen -->
+<div class="site-screen hidden" id="summary-screen">
+  <div style="background:var(--surface);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:900px;margin:1rem;border:1px solid var(--border);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      <div>
+        <div style="font-family:var(--mono);font-size:14px;font-weight:500;">Cross-site material summary</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">Material balances across all sites</div>
+      </div>
+      <button class="btn btn-sm" style="border-color:var(--border)" onclick="closeSummary()">← Back to sites</button>
+    </div>
+    <div class="table-wrap">
+      <table id="summary-table">
+        <thead id="summary-thead"></thead>
+        <tbody id="summary-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app-wrapper" class="hidden">
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">JMC<span>.</span>STOCK</div>
+    <div class="site-badge" id="active-site-badge" onclick="goBackToSites()">— select site ▾</div>
+  </div>
+  <div class="header-right">
+    <div class="user-info" id="user-info"></div>
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-text">Connected</span>
+    </div>
+    <button class="signout-btn" onclick="doSignOut()">Sign out</button>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showTab('dashboard')">Dashboard</button>
+  <button class="nav-btn" onclick="showTab('inward')">Record Inward</button>
+  <button class="nav-btn" onclick="showTab('outward')">Record Issuance</button>
+  <button class="nav-btn" onclick="showTab('ledger')">Full Ledger</button>
+  <button class="nav-btn" onclick="showTab('balances')">Stock Balances</button>
+  <button class="nav-btn" onclick="showTab('materials')">Materials</button>
+</nav>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div id="tab-dashboard" class="section active">
+    <div class="metrics-grid" id="metrics-grid"></div>
+    <div id="low-alerts"></div>
+    <div class="card">
+      <div class="card-title">Recent Transactions</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Person / Source</th></tr></thead>
+          <tbody id="recent-body"><tr class="empty-row"><td colspan="7"><div class="loader"><div class="spinner"></div>Loading...</div></td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination-bar" id="recent-pagination"></div>
+    </div>
+  </div>
+
+  <!-- INWARD -->
+  <div id="tab-inward" class="section">
+    <div class="card">
+      <div class="card-title">Record Inward Transaction</div>
+      <div class="form-grid2">
+        <div class="form-group"><label>Date</label><input type="date" id="in-date"></div>
+        <div class="form-group"><label>Transaction Type</label>
+          <select id="in-type">
+            <option value="hq">Material from HQ</option>
+            <option value="purchase">Purchased by site staff</option>
+            <option value="client">Issued by client (debitable)</option>
+            <option value="transfer">Transfer from onsite contractor</option>
+            <option value="return">Return to stockyard</option>
+          </select>
         </div>
-    </nav>
-
-    <!-- Main Workspace -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        <!-- TAB 1: DASHBOARD -->
-        <div id="tab-dashboard" class="tab-content space-y-8">
-            <!-- Analytics Cards Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Unique Items</p>
-                        <h3 id="metric-materials" class="text-3xl font-bold text-slate-800 mt-1">0</h3>
-                    </div>
-                    <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-cubes text-xl"></i></div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Inward Batches</p>
-                        <h3 id="metric-inward" class="text-3xl font-bold text-emerald-600 mt-1">0</h3>
-                    </div>
-                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-circle-arrow-down text-xl"></i></div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Issuance Requests</p>
-                        <h3 id="metric-issuance" class="text-3xl font-bold text-rose-600 mt-1">0</h3>
-                    </div>
-                    <div class="p-3 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-circle-arrow-up text-xl"></i></div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Stock Value</p>
-                        <h3 id="metric-value" class="text-2xl font-black text-amber-600 mt-2">₹0.00</h3>
-                    </div>
-                    <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fa-solid fa-wallet text-xl"></i></div>
-                </div>
-            </div>
-
-            <!-- Stock Table & Activity Log Breakdown -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Current Stock Balances Table -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col overflow-hidden">
-                    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
-                        <h2 class="font-bold text-slate-800 tracking-tight"><i class="fa-solid fa-warehouse mr-2 text-indigo-600"></i>Current Stock Balances</h2>
-                        <span class="text-xs bg-indigo-100 text-indigo-700 font-semibold px-2.5 py-0.5 rounded-full">Live Analytics</span>
-                    </div>
-                    <div class="overflow-x-auto flex-1">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-100/70 text-slate-500 text-[11px] font-bold uppercase border-b border-slate-200 tracking-wider">
-                                    <th class="px-6 py-3.5">Material Description</th>
-                                    <th class="px-6 py-3.5 text-right">Available Qty</th>
-                                    <th class="px-6 py-3.5 text-right">Asset Valuation</th>
-                                </tr>
-                            </thead>
-                            <tbody id="balances-table-body" class="divide-y divide-slate-100 text-sm">
-                                <!-- Generated Dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Recent Activity Feed Sidebar -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
-                    <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/70">
-                        <h2 class="font-bold text-slate-800 tracking-tight"><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-600"></i>Recent Actions</h2>
-                    </div>
-                    <div class="overflow-x-auto flex-1">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <tbody id="recent-transactions-body" class="divide-y divide-slate-100">
-                                <!-- Generated Dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+      </div>
+      <div class="form-grid2">
+        <div class="form-group"><label>Select existing material</label>
+          <select id="in-material"><option value="">— select —</option></select>
         </div>
-
-        <!-- TAB 2: RECORD INWARD FORM -->
-        <div id="tab-inward" class="tab-content hidden max-w-2xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-6 py-5 border-b border-slate-100 bg-emerald-600 text-white flex items-center space-x-3">
-                    <i class="fa-solid fa-circle-down text-xl"></i>
-                    <div>
-                        <h2 class="font-bold tracking-tight">Material Inward Entry</h2>
-                        <p class="text-xs text-emerald-100 mt-0.5">Log new materials, assets, or tools entering the site.</p>
-                    </div>
-                </div>
-                <form id="inward-form" onsubmit="handleInwardSubmit(e || event)" class="p-6 space-y-5">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Posting Date</label>
-                            <input type="date" id="inward-date" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Challan / PO Ref No</label>
-                            <input type="text" id="inward-challan" placeholder="e.g., PO-1024" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Material Description</label>
-                        <input type="text" id="inward-material" placeholder="e.g., TMT Steel 12mm" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Vendor / Party Name</label>
-                        <input type="text" id="inward-vendor" placeholder="e.g., Jindal Steels Ltd" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
-                    </div>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="col-span-2">
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Received Quantity</label>
-                            <input type="number" step="any" id="inward-qty" placeholder="0.00" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Unit</label>
-                            <input type="text" id="inward-unit" placeholder="e.g., MT, Bags" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Site / Store Location Location</label>
-                        <select id="inward-site" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm bg-white">
-                            <option value="Main Site">Main Site</option>
-                            <option value="South Extension Depot">South Extension Depot</option>
-                            <option value="Metro Corridor Hub">Metro Corridor Hub</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Total Value (INR) <span class="text-[10px] text-slate-400 font-normal lowercase">(Optional)</span></label>
-                        <input type="number" step="any" id="inward-amount" placeholder="₹ Total Worth Amount" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
-                    </div>
-                    <div class="pt-2">
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-emerald-600/10 transition duration-150">
-                            Save Inward Record
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <div class="form-group"><label>Or type new material name</label>
+          <input type="text" id="in-new-material" placeholder="e.g. OPC Cement 53 Grade, JCB Machine">
         </div>
-
-        <!-- TAB 3: RECORD ISSUANCE FORM -->
-        <div id="tab-issuance" class="tab-content hidden max-w-2xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-6 py-5 border-b border-slate-100 bg-rose-600 text-white flex items-center space-x-3">
-                    <i class="fa-solid fa-circle-up text-xl"></i>
-                    <div>
-                        <h2 class="font-bold tracking-tight">Material Issuance Entry</h2>
-                        <p class="text-xs text-rose-100 mt-0.5">Deduct inventory assets for internal operational deployment.</p>
-                    </div>
-                </div>
-                <form id="issuance-form" onsubmit="handleIssuanceSubmit(e || event)" class="p-6 space-y-5">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Issue Date</label>
-                            <input type="date" id="issue-date" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Issue Slip / MIN No</label>
-                            <input type="text" id="issue-slip" placeholder="e.g., MIN-100" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Material to Issue</label>
-                        <select id="issue-material" onchange="updateIssuanceAvailableUnit()" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm bg-white">
-                            <option value="">-- Select Material --</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Current Stock</label>
-                            <input type="text" id="issue-available-display" disabled class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 font-medium text-slate-500 text-sm cursor-not-allowed">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Quantity to Issue</label>
-                            <input type="number" step="any" id="issue-qty" placeholder="0.00" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Unit Type</label>
-                            <input type="text" id="issue-unit" disabled class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 font-medium text-slate-500 text-sm cursor-not-allowed">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Source Location / Site</label>
-                            <select id="issue-site" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm bg-white">
-                                <option value="Main Site">Main Site</option>
-                                <option value="South Extension Depot">South Extension Depot</option>
-                                <option value="Metro Corridor Hub">Metro Corridor Hub</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Issued To (Contractor/Dept)</label>
-                            <input type="text" id="issue-recipient" placeholder="e.g., Sub-Contractor Structure Crew" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Declared Worth Valuation <span class="text-[10px] text-slate-400 font-normal lowercase">(Optional - Left blank will auto-deduct via average cost value)</span></label>
-                        <input type="number" step="any" id="issue-amount" placeholder="₹ Explicit Deducted Valuation Value" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm">
-                    </div>
-                    <div class="pt-2">
-                        <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-rose-600/10 transition duration-150">
-                            Authorize Material Issuance
-                        </button>
-                    </div>
-                </form>
-            </div>
+      </div>
+      <div class="form-grid3">
+        <div class="form-group"><label>Quantity</label><input type="number" id="in-qty" min="0" step="any" placeholder="0"></div>
+        <div class="form-group"><label>Unit</label>
+          <select id="in-unit">
+            <option>bags</option><option>kg</option><option>MT</option><option>nos</option>
+            <option>sqft</option><option>sqm</option><option>rft</option><option>litre</option>
+            <option>cum</option><option>cft</option><option>set</option><option>lot</option><option>mtr</option><option>roll</option><option>pair</option>
+          </select>
         </div>
+        <div class="form-group"><label>Challan / Invoice No.</label><input type="text" id="in-challan" placeholder="optional"></div>
+      </div>
+      <div class="form-group"><label>Received from (person / supplier / contractor)</label>
+        <input type="text" id="in-from" placeholder="Full name of person or party sending material">
+      </div>
+      <div class="form-group"><label>Remarks</label><input type="text" id="in-remarks" placeholder="optional"></div>
+      <button class="btn btn-primary" onclick="saveInward()">Save Inward Entry</button>
+    </div>
+  </div>
 
-        <!-- TAB 4: HISTORICAL LEDGER -->
-        <div id="tab-ledger" class="tab-content hidden space-y-4">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div class="relative flex-1 max-w-md">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                    </span>
-                    <input type="text" id="ledger-search" oninput="renderLedgerTable()" placeholder="Filter entries by description, reference, or recipient..." class="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm shadow-sm">
-                </div>
-                <button onclick="downloadCSV()" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all duration-150">
-                    <i class="fa-solid fa-file-csv mr-2 text-base"></i>Export Full Ledger (.CSV)
-                </button>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-800 text-white text-xs font-semibold uppercase tracking-wider border-b border-slate-300">
-                                <th class="px-6 py-4">Date</th>
-                                <th class="px-6 py-4">Doc Ref No</th>
-                                <th class="px-6 py-4">Material Specification</th>
-                                <th class="px-6 py-4">Type</th>
-                                <th class="px-6 py-4">Party / Allocation Destination</th>
-                                <th class="px-6 py-4 text-right">Qty</th>
-                                <th class="px-6 py-4">Unit</th>
-                                <th class="px-6 py-4 text-right">Amount (₹)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ledger-table-body" class="divide-y divide-slate-200 text-sm">
-                            <!-- Generated Dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+  <!-- OUTWARD -->
+  <div id="tab-outward" class="section">
+    <div class="card">
+      <div class="card-title">Record Material Issuance</div>
+      <div class="form-grid2">
+        <div class="form-group"><label>Date</label><input type="date" id="out-date"></div>
+        <div class="form-group"><label>Material</label>
+          <select id="out-material" onchange="fillOutwardMeta()"><option value="">— select —</option></select>
         </div>
-
-        <!-- TAB 5: CROSS-SITE SUMMARY MATRIX -->
-        <div id="tab-summary" class="tab-content hidden space-y-4">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-6 py-5 border-b border-slate-100 bg-slate-800 text-white flex justify-between items-center">
-                    <div>
-                        <h2 class="font-bold tracking-tight"><i class="fa-solid fa-network-wired mr-2 text-indigo-400"></i>Cross-Site Allocation Matrix</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Quantities distributed natively per site warehouse based on transaction assignments.</p>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table id="matrix-table" class="w-full text-left border-collapse">
-                        <!-- Headings and matrix rows rendered programmatically -->
-                    </table>
-                </div>
-            </div>
+      </div>
+      <div class="form-grid3">
+        <div class="form-group"><label>Quantity to issue</label><input type="number" id="out-qty" min="0" step="any" placeholder="0"></div>
+        <div class="form-group"><label>Unit</label><input type="text" id="out-unit" readonly placeholder="auto"></div>
+        <div class="form-group"><label>Available balance</label><input type="text" id="out-avail" readonly placeholder="select material"></div>
+      </div>
+      <div class="form-grid2">
+        <div class="form-group"><label>Issued to (person receiving material)</label>
+          <input type="text" id="out-to" placeholder="Full name of person">
         </div>
+        <div class="form-group"><label>Issued by (authorising person)</label>
+          <input type="text" id="out-by" placeholder="Your name / supervisor name">
+        </div>
+      </div>
+      <div class="form-group"><label>Purpose / Work area</label>
+        <input type="text" id="out-purpose" placeholder="e.g. Foundation work Block A, Roof slab Block B">
+      </div>
+      <div class="form-group"><label>Remarks</label><input type="text" id="out-remarks" placeholder="optional"></div>
+      <button class="btn btn-primary" onclick="saveOutward()">Save Issuance Entry</button>
+    </div>
+  </div>
 
-    </main>
+  <!-- LEDGER -->
+  <div id="tab-ledger" class="section">
+    <div class="card">
+      <div class="card-title">Full Transaction Ledger</div>
+      <div class="date-range-bar">
+        <label>From</label>
+        <input type="date" id="f-from" onchange="resetLedgerPage();renderLedger()">
+        <label>To</label>
+        <input type="date" id="f-to" onchange="resetLedgerPage();renderLedger()">
+        <button class="btn" style="font-size:12px;padding:6px 12px;border-color:var(--border)" onclick="clearDateRange()">Clear dates</button>
+      </div>
+      <div class="filter-bar">
+        <input type="text" id="f-text" placeholder="Search material, person, challan..." oninput="resetLedgerPage();renderLedger()">
+        <select id="f-type" onchange="resetLedgerPage();renderLedger()">
+          <option value="">All types</option>
+          <option value="hq">HQ supply</option>
+          <option value="purchase">Site purchase</option>
+          <option value="client">Client issue</option>
+          <option value="transfer">Contractor transfer</option>
+          <option value="return">Return</option>
+          <option value="issue">Issued out</option>
+        </select>
+        <select id="f-mat" onchange="resetLedgerPage();renderLedger()"><option value="">All materials</option></select>
+        <button class="btn btn-export" onclick="exportCSV()">Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Material</th><th>In</th><th>Out</th><th>Unit</th><th>Received From</th><th>Issued To</th><th>Purpose</th><th>Challan</th><th>Remarks</th><th>Del</th></tr></thead>
+          <tbody id="ledger-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination-bar" id="ledger-pagination"></div>
+    </div>
+  </div>
 
-    <!-- UI Core Logic Engine -->
-    <script>
-        // Data Store Model with assigned 'site' configurations
-        let transactions = [
-            { id: 1, date: "2026-05-10", type: "Inward", refNo: "PO-9091", material: "TMT Steel 12mm", party: "Jindal Steels Ltd", qty: 25.0, unit: "MT", amount: 1625000, site: "Main Site" },
-            { id: 2, date: "2026-05-12", type: "Inward", refNo: "CH-4410", material: "Onyx Cement OPC", party: "UltraTech Depot", qty: 400.0, unit: "Bags", amount: 180000, site: "South Extension Depot" },
-            { id: 3, date: "2026-05-14", type: "Issuance", refNo: "MIN-001", material: "TMT Steel 12mm", party: "Block A Foundation", qty: 5.5, unit: "MT", amount: 357500, site: "Main Site" },
-            { id: 4, date: "2026-05-15", type: "Inward", refNo: "PO-9092", material: "River Sand Coarse", party: "Shree Balaji Aggregates", qty: 1200.0, unit: "CFT", amount: 72000, site: "Metro Corridor Hub" },
-            { id: 5, date: "2026-05-16", type: "Issuance", refNo: "MIN-002", material: "Onyx Cement OPC", party: "Plastering Crew Tier-1", qty: 50.0, unit: "Bags", amount: 22500, site: "South Extension Depot" },
-            { id: 6, date: "2026-05-17", type: "Inward", refNo: "PO-Legacy", material: "Brick Wire Mesh", party: "Local Hardware Hub", qty: 30.0, unit: "Rolls", amount: "", site: "Main Site" }
-        ];
+  <!-- BALANCES -->
+  <div id="tab-balances" class="section">
+    <div class="card">
+      <div class="card-title">Material-wise Stock Balances</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Material</th><th>Unit</th><th>Total Received</th><th>Total Issued</th><th>Balance</th><th>Min Level</th><th>Status</th></tr></thead>
+          <tbody id="balance-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-        // Central System Locations Registry
-        const locations = ["Main Site", "South Extension Depot", "Metro Corridor Hub"];
+  <!-- MATERIALS -->
+  <div id="tab-materials" class="section">
+    <div class="card">
+      <div class="card-title">Add New Material / Asset</div>
+      <div class="form-grid3">
+        <div class="form-group"><label>Material name</label>
+          <input type="text" id="mat-name" placeholder="e.g. TMT Steel 12mm, Tower Crane">
+        </div>
+        <div class="form-group"><label>Unit</label>
+          <select id="mat-unit">
+            <option>bags</option><option>kg</option><option>MT</option><option>nos</option>
+            <option>sqft</option><option>sqm</option><option>rft</option><option>litre</option>
+            <option>cum</option><option>cft</option><option>set</option><option>lot</option><option>mtr</option><option>roll</option><option>pair</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Min stock alert level</label>
+          <input type="number" id="mat-min" placeholder="0 = no alert" min="0">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addMaterial()">Add Material</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Material List</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Material name</th><th>Unit</th><th>Min alert</th><th>Action</th></tr></thead>
+          <tbody id="mat-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-800', 'text-white');
-                btn.classList.add('text-indigo-200', 'hover:bg-indigo-800', 'hover:text-white');
-            });
-            
-            const activeNav = document.getElementById(`nav-${tabId}`);
-            if(activeNav) activeNav.classList.add('bg-indigo-800', 'text-white');
+</div>
+</div>
 
-            if(tabId === 'dashboard') refreshDashboard();
-            if(tabId === 'issuance') populateIssuanceMaterials();
-            if(tabId === 'ledger') renderLedgerTable();
-            if(tabId === 'summary') renderCrossSiteSummary();
-        }
+<div class="toast" id="toast"></div>
 
-        // Calculation Engine containing safety valuation checks and weighted average auto-cost corrections
-        function computeBalances() {
-            let balances = {};
-            transactions.forEach(t => {
-                if(!balances[t.material]) {
-                    balances[t.material] = { qty: 0, unit: t.unit, totalVal: 0 };
-                }
-                
-                let qtyValue = parseFloat(t.qty) || 0;
-                // Protection against blank field string to NaN conversions
-                let amtValue = (t.amount && !isNaN(t.amount)) ? parseFloat(t.amount) : 0;
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, remove, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut as fbSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-                if(t.type === 'Inward') {
-                    balances[t.material].qty += qtyValue;
-                    balances[t.material].totalVal += amtValue;
-                } else if(t.type === 'Issuance') {
-                    // Logic Correction: Auto-deduct via average costing mechanics if amount entry was skipped by field operators
-                    if (amtValue === 0 && balances[t.material].qty > 0) {
-                        let avgCost = balances[t.material].totalVal / balances[t.material].qty;
-                        amtValue = avgCost * qtyValue;
-                    }
-                    balances[t.material].qty -= qtyValue;
-                    balances[t.material].totalVal -= amtValue;
-                }
-            });
-            return balances;
-        }
+const firebaseConfig = {
+  apiKey: "AIzaSyB05ohXzOHY9hwa10mqdpHUNpU_lI2W8wc",
+  authDomain: "kasa-isle-stock.firebaseapp.com",
+  databaseURL: "https://kasa-isle-stock-default-rtdb.firebaseio.com",
+  projectId: "kasa-isle-stock",
+  storageBucket: "kasa-isle-stock.firebasestorage.app",
+  messagingSenderId: "537720610807",
+  appId: "1:537720610907:web:2d5ea5bcbf5075dd23df7e"
+};
 
-        function refreshDashboard() {
-            const balances = computeBalances();
-            const materialKeys = Object.keys(balances);
-            
-            document.getElementById('metric-materials').innerText = materialKeys.length;
-            document.getElementById('metric-inward').innerText = transactions.filter(t => t.type === 'Inward').length;
-            document.getElementById('metric-issuance').innerText = transactions.filter(t => t.type === 'Issuance').length;
+const ALLOWED_EMAILS = ['aarjav2003@gmail.com','jmcinfratech@gmail.com','tlkraj343@gmail.com'];
 
-            let overallValue = 0;
-            materialKeys.forEach(k => { if(balances[k].totalVal > 0) overallValue += balances[k].totalVal; });
-            document.getElementById('metric-value').innerText = "₹" + overallValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits:2});
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-            const balBody = document.getElementById('balances-table-body');
-            balBody.innerHTML = '';
-            materialKeys.forEach(mat => {
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50 transition";
-                row.innerHTML = `
-                    <td class="px-6 py-4 font-medium text-slate-900">${mat}</td>
-                    <td class="px-6 py-4 text-right font-semibold text-slate-700">${balances[mat].qty.toFixed(2)} <span class="text-xs font-normal text-slate-400">${balances[mat].unit}</span></td>
-                    <td class="px-6 py-4 text-right font-bold text-amber-600">₹${Math.max(0, balances[mat].totalVal).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                `;
-                balBody.appendChild(row);
-            });
+let allSites = {};
+let allSitesData = {};
+let currentSiteKey = null;
+let materials = {};
+let transactions = {};
+let materialUnsub = null;
+let txUnsub = null;
 
-            const recentBody = document.getElementById('recent-transactions-body');
-            recentBody.innerHTML = '';
-            const recentArray = transactions.slice(-5).reverse();
-            recentArray.forEach(t => {
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50 transition";
-                const typeBadge = t.type === 'Inward' ? 
-                    `<span class="text-xs text-emerald-600 font-medium"><i class="fa-solid fa-arrow-turn-down mr-1"></i>In</span>` : 
-                    `<span class="text-xs text-rose-600 font-medium"><i class="fa-solid fa-arrow-turn-up mr-1"></i>Out</span>`;
-                
-                const displayedAmt = (t.amount && !isNaN(t.amount)) ? "₹" + parseFloat(t.amount).toLocaleString('en-IN') : "—";
+const syncDot = document.getElementById('sync-dot');
+const syncText = document.getElementById('sync-text');
+function setSyncing() { syncDot.className='sync-dot syncing'; syncText.textContent='Syncing...'; }
+function setSynced() { syncDot.className='sync-dot'; syncText.textContent='Connected'; }
+function setError() { syncDot.className='sync-dot error'; syncText.textContent='Error'; }
 
-                row.innerHTML = `
-                    <td class="px-4 py-3">
-                        <div class="font-medium text-slate-800 truncate max-w-[140px]">${t.material}</div>
-                        <div>${typeBadge} <span class="text-[11px] text-slate-400">${t.refNo}</span></div>
-                    </td>
-                    <td class="px-4 py-3 text-right font-medium text-slate-600">${t.qty}</td>
-                    <td class="px-4 py-3 text-right font-semibold text-amber-600">${displayedAmt}</td>
-                `;
-                recentBody.appendChild(row);
-            });
-        }
+function toast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError?' error':'');
+  setTimeout(()=>t.className='toast', 3000);
+}
 
-        function handleInwardSubmit(e) {
-            e.preventDefault();
-            const newTx = {
-                id: transactions.length + 1,
-                date: document.getElementById('inward-date').value,
-                type: "Inward",
-                refNo: document.getElementById('inward-challan').value,
-                material: document.getElementById('inward-material').value.trim(),
-                party: document.getElementById('inward-vendor').value.trim(),
-                qty: parseFloat(document.getElementById('inward-qty').value),
-                unit: document.getElementById('inward-unit').value.trim(),
-                amount: document.getElementById('inward-amount').value ? parseFloat(document.getElementById('inward-amount').value) : "",
-                site: document.getElementById('inward-site').value // Dynamic validation routing fix
-            };
-            transactions.push(newTx);
-            document.getElementById('inward-form').reset();
-            switchTab('dashboard');
-        }
+// AUTH
+window.signInWithGoogle = async function() {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    if(!ALLOWED_EMAILS.includes(result.user.email)) {
+      await fbSignOut(auth);
+      document.getElementById('login-denied').style.display = 'block';
+    }
+  } catch(e) { console.error(e); }
+};
 
-        function populateIssuanceMaterials() {
-            const select = document.getElementById('issue-material');
-            select.innerHTML = '<option value="">-- Select Material --</option>';
-            const balances = computeBalances();
-            Object.keys(balances).forEach(m => {
-                if(balances[m].qty > 0) {
-                    const opt = document.createElement('option');
-                    opt.value = m;
-                    opt.innerText = `${m} (Avail: ${balances[m].qty} ${balances[m].unit})`;
-                    select.appendChild(opt);
-                }
-            });
-            updateIssuanceAvailableUnit();
-        }
+window.doSignOut = async function() {
+  if(confirm('Sign out?')) { await fbSignOut(auth); }
+};
 
-        function updateIssuanceAvailableUnit() {
-            const selectedMat = document.getElementById('issue-material').value;
-            const balances = computeBalances();
-            const qtyInput = document.getElementById('issue-qty');
-            if(selectedMat && balances[selectedMat]) {
-                document.getElementById('issue-unit').value = balances[selectedMat].unit;
-                document.getElementById('issue-available-display').value = `${balances[selectedMat].qty} ${balances[selectedMat].unit}`;
-                qtyInput.max = balances[selectedMat].qty; // Realtime barrier UI constraint
-            } else {
-                document.getElementById('issue-unit').value = '';
-                document.getElementById('issue-available-display').value = '';
-                qtyInput.removeAttribute('max');
-            }
-        }
+onAuthStateChanged(auth, user => {
+  if(user && ALLOWED_EMAILS.includes(user.email)) {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('user-info').textContent = user.email;
+    initSites();
+  } else {
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('site-screen').classList.add('hidden');
+    document.getElementById('app-wrapper').classList.add('hidden');
+    document.getElementById('summary-screen').classList.add('hidden');
+  }
+});
 
-        function handleIssuanceSubmit(e) {
-            e.preventDefault();
-            const mat = document.getElementById('issue-material').value;
-            const qtyToIssue = parseFloat(document.getElementById('issue-qty').value);
-            const balances = computeBalances();
+// SITES
+function initSites() {
+  onValue(ref(db, 'sites'), snap => {
+    allSites = snap.val() || {};
+    renderSiteList();
+    loadAllSitesData();
+  }, () => setError());
+  document.getElementById('site-screen').classList.remove('hidden');
+}
 
-            if(!mat || !balances[mat]) return;
-            if(qtyToIssue > balances[mat].qty) {
-                alert("Issuance aborted: Requested operational quantity exceeds available site stock thresholds.");
-                return;
-            }
+function renderSiteList() {
+  const list = document.getElementById('site-list');
+  const keys = Object.keys(allSites);
+  if(!keys.length) {
+    list.innerHTML = '<div style="font-size:13px;color:var(--text-faint);padding:1rem 0;">No sites yet. Add your first site below.</div>';
+    return;
+  }
+  list.innerHTML = keys.map(k => {
+    const s = allSites[k];
+    return `<div class="site-item" onclick="selectSite('${k}')">
+      <div>
+        <div class="site-item-name">${s.name}</div>
+        ${s.location ? `<div class="site-item-loc">${s.location}</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn btn-danger" style="padding:3px 8px;font-size:11px;" onclick="event.stopPropagation();deleteSite('${k}','${s.name.replace(/'/g,"\\'")}')">Del</button>
+        <span class="site-item-arrow">›</span>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-            const newTx = {
-                id: transactions.length + 1,
-                date: document.getElementById('issue-date').value,
-                type: "Issuance",
-                refNo: document.getElementById('issue-slip').value,
-                material: mat,
-                party: document.getElementById('issue-recipient').value.trim(),
-                qty: qtyToIssue,
-                unit: balances[mat].unit,
-                amount: document.getElementById('issue-amount').value ? parseFloat(document.getElementById('issue-amount').value) : "",
-                site: document.getElementById('issue-site').value // Routing destination assignment mapping
-            };
+window.addSite = async function() {
+  const name = document.getElementById('new-site-name').value.trim();
+  const location = document.getElementById('new-site-location').value.trim();
+  if(!name) { toast('Please enter a site name.', true); return; }
+  await push(ref(db,'sites'), { name, location: location||'' });
+  document.getElementById('new-site-name').value = '';
+  document.getElementById('new-site-location').value = '';
+  toast('Site added!');
+};
 
-            transactions.push(newTx);
-            document.getElementById('issuance-form').reset();
-            switchTab('dashboard');
-        }
+window.deleteSite = async function(key, name) {
+  if(!confirm(`Delete site "${name}"? All its materials and transactions will also be deleted.`)) return;
+  await remove(ref(db, `sites/${key}`));
+  await remove(ref(db, `materials/${key}`));
+  await remove(ref(db, `transactions/${key}`));
+  toast('Site deleted.');
+};
 
-        function renderLedgerTable() {
-            const search = document.getElementById('ledger-search').value.toLowerCase();
-            const body = document.getElementById('ledger-table-body');
-            body.innerHTML = '';
+window.selectSite = function(key) {
+  currentSiteKey = key;
+  const site = allSites[key];
+  document.getElementById('active-site-badge').textContent = site.name + (site.location ? ` — ${site.location}` : '') + ' ▾';
+  document.getElementById('site-screen').classList.add('hidden');
+  document.getElementById('app-wrapper').classList.remove('hidden');
+  loadSiteData(key);
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('in-date').value = today;
+  document.getElementById('out-date').value = today;
+  showTab('dashboard');
+};
 
-            const filtered = transactions.filter(t => 
-                t.material.toLowerCase().includes(search) ||
-                t.refNo.toLowerCase().includes(search) ||
-                t.party.toLowerCase().includes(search) ||
-                t.type.toLowerCase().includes(search)
-            );
+window.goBackToSites = function() {
+  document.getElementById('app-wrapper').classList.add('hidden');
+  document.getElementById('site-screen').classList.remove('hidden');
+  if(materialUnsub) { materialUnsub(); materialUnsub = null; }
+  if(txUnsub) { txUnsub(); txUnsub = null; }
+  currentSiteKey = null;
+  materials = {};
+  transactions = {};
+};
 
-            filtered.forEach(t => {
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50/80 transition text-slate-700";
-                const typeClass = t.type === 'Inward' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200';
-                const displayedAmt = (t.amount && !isNaN(t.amount)) ? "₹" + parseFloat(t.amount).toLocaleString('en-IN', {minimumFractionDigits: 2}) : "—";
+function loadSiteData(siteKey) {
+  if(materialUnsub) materialUnsub();
+  if(txUnsub) txUnsub();
 
-                row.innerHTML = `
-                    <td class="px-6 py-4 font-medium text-slate-500">${t.date}</td>
-                    <td class="px-6 py-4 font-semibold text-slate-900">${t.refNo}</td>
-                    <td class="px-6 py-4 font-medium text-slate-800">${t.material}</td>
-                    <td class="px-6 py-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${typeClass}">${t.type}</span></td>
-                    <td class="px-6 py-4 text-slate-600 max-w-xs truncate">${t.party}</td>
-                    <td class="px-6 py-4 text-right font-bold text-slate-800">${t.qty}</td>
-                    <td class="px-6 py-4 text-slate-400 text-xs">${t.unit}</td>
-                    <td class="px-6 py-4 text-right font-bold text-amber-600">${displayedAmt}</td>
-                `;
-                body.appendChild(row);
-            });
-        }
+  materialUnsub = onValue(ref(db, `materials/${siteKey}`), snap => {
+    materials = snap.val() || {};
+    populateDropdowns();
+    if(activeTab.current==='dashboard') renderDashboard();
+    if(activeTab.current==='balances') renderBalances();
+    if(activeTab.current==='materials') renderMaterials();
+    setSynced();
+  }, ()=>setError());
 
-        function downloadCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Date,Doc Ref No,Material Description,Transaction Type,Party/Destination,Qty,Unit,Amount (Rs)\n";
-            
-            transactions.forEach(t => {
-                let csvAmt = (t.amount && !isNaN(t.amount)) ? t.amount : "";
-                const rowData = [
-                    t.date,
-                    `"${t.refNo}"`,
-                    `"${t.material}"`,
-                    t.type,
-                    `"${t.party}"`,
-                    t.qty,
-                    t.unit,
-                    csvAmt
-                ];
-                csvContent += rowData.join(",") + "\n";
-            });
+  txUnsub = onValue(ref(db, `transactions/${siteKey}`), snap => {
+    transactions = snap.val() || {};
+    if(activeTab.current==='dashboard') renderDashboard();
+    if(activeTab.current==='ledger') renderLedger();
+    if(activeTab.current==='balances') renderBalances();
+    setSynced();
+  }, ()=>setError());
+}
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Material_Ledger_Export_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+// CROSS-SITE SUMMARY
+function loadAllSitesData() {
+  Object.keys(allSites).forEach(siteKey => {
+    onValue(ref(db, `materials/${siteKey}`), snap => {
+      if(!allSitesData[siteKey]) allSitesData[siteKey] = {};
+      allSitesData[siteKey].materials = snap.val() || {};
+    });
+    onValue(ref(db, `transactions/${siteKey}`), snap => {
+      if(!allSitesData[siteKey]) allSitesData[siteKey] = {};
+      allSitesData[siteKey].transactions = snap.val() || {};
+    });
+  });
+}
 
-        // Logic Corrected: Generates balances mapping to real site parameter allocations
-        function renderCrossSiteSummary() {
-            const table = document.getElementById('matrix-table');
-            table.innerHTML = '';
+function getSiteBalance(siteKey, matName) {
+  const txs = (allSitesData[siteKey] && allSitesData[siteKey].transactions) ? Object.values(allSitesData[siteKey].transactions) : [];
+  let inn=0, out=0;
+  txs.forEach(tx => {
+    if(tx.material !== matName) return;
+    if(tx.direction==='in') inn += parseFloat(tx.qty)||0;
+    else out += parseFloat(tx.qty)||0;
+  });
+  return inn - out;
+}
 
-            const uniqueMaterials = [...new Set(transactions.map(t => t.material))];
+window.openSummary = function() {
+  document.getElementById('site-screen').classList.add('hidden');
+  document.getElementById('summary-screen').classList.remove('hidden');
+  renderSummary();
+};
 
-            let theadHtml = `
-                <thead>
-                    <tr class="bg-slate-800 text-white text-xs font-semibold uppercase tracking-wider border-b border-slate-300">
-                        <th class="px-6 py-4">Material Specification</th>
-                        <th class="px-4 py-4 text-center">Global Unit</th>`;
-            
-            locations.forEach(loc => {
-                theadHtml += `<th class="px-6 py-4 text-right bg-slate-700/50">${loc}</th>`;
-            });
-            theadHtml += `<th class="px-6 py-4 text-right text-amber-400 bg-slate-900">Total Amt (₹)</th></tr></thead>`;
-            table.innerHTML += theadHtml;
+window.closeSummary = function() {
+  document.getElementById('summary-screen').classList.add('hidden');
+  document.getElementById('site-screen').classList.remove('hidden');
+};
 
-            let tbody = document.createElement('tbody');
-            tbody.className = "divide-y divide-slate-200 text-sm";
+function renderSummary() {
+  const siteKeys = Object.keys(allSites);
+  if(!siteKeys.length) {
+    document.getElementById('summary-thead').innerHTML = '';
+    document.getElementById('summary-tbody').innerHTML = '<tr class="empty-row"><td colspan="3">No sites added yet.</td></tr>';
+    return;
+  }
 
-            uniqueMaterials.forEach(mat => {
-                const matchedTx = transactions.find(t => t.material === mat);
-                const unit = matchedTx ? matchedTx.unit : "Units";
+  // Collect all unique materials across all sites
+  const allMaterials = new Map();
+  siteKeys.forEach(sk => {
+    const mats = (allSitesData[sk] && allSitesData[sk].materials) ? Object.values(allSitesData[sk].materials) : [];
+    mats.forEach(m => {
+      if(!allMaterials.has(m.name)) allMaterials.set(m.name, m.unit||'');
+    });
+  });
 
-                rowHtml = `<tr>
-                    <td class="px-6 py-4 font-bold text-slate-900 bg-slate-50/50">${mat}</td>
-                    <td class="px-4 py-4 text-center text-xs font-medium text-slate-400 bg-slate-50/50">${unit}</td>`;
-                
-                let totalMaterialValueAcrossSites = 0;
+  if(!allMaterials.size) {
+    document.getElementById('summary-thead').innerHTML = '';
+    document.getElementById('summary-tbody').innerHTML = '<tr class="empty-row"><td colspan="3">No materials recorded across any site yet.</td></tr>';
+    return;
+  }
 
-                locations.forEach(loc => {
-                    let siteBal = 0;
-                    let siteVal = 0;
+  // Build header
+  const thead = document.getElementById('summary-thead');
+  thead.innerHTML = `<tr>
+    <th>Material</th>
+    <th>Unit</th>
+    ${siteKeys.map(sk=>`<th class="site-col-header">${allSites[sk].name}${allSites[sk].location?'<br><span style="font-weight:400;color:var(--text-faint)">'+allSites[sk].location+'</span>':''}</th>`).join('')}
+    <th class="site-col-header" style="background:var(--bg)">Total</th>
+  </tr>`;
 
-                    transactions.forEach(t => {
-                        if(t.material === mat && t.site === loc) {
-                            let qtyValue = parseFloat(t.qty) || 0;
-                            let amtValue = (t.amount && !isNaN(t.amount)) ? parseFloat(t.amount) : 0;
-                            
-                            if(t.type === 'Inward') {
-                                siteBal += qtyValue;
-                                siteVal += amtValue;
-                            } else {
-                                if (amtValue === 0 && (siteBal + qtyValue) > 0) {
-                                    amtValue = (siteVal / (siteBal + qtyValue)) * qtyValue;
-                                }
-                                siteBal -= qtyValue;
-                                siteVal -= amtValue;
-                            }
-                        }
-                    });
+  // Build rows
+  const sortedMats = [...allMaterials.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+  const tbody = document.getElementById('summary-tbody');
+  tbody.innerHTML = sortedMats.map(([matName, unit]) => {
+    let total = 0;
+    const cells = siteKeys.map(sk => {
+      const bal = getSiteBalance(sk, matName);
+      total += bal;
+      const cls = bal <= 0 ? 'b-zero' : 'b-ok';
+      return `<td class="site-col-cell"><span class="badge ${cls}">${bal.toFixed(1)}</span></td>`;
+    }).join('');
+    const totalCls = total <= 0 ? 'b-zero' : 'b-ok';
+    return `<tr>
+      <td><strong>${matName}</strong></td>
+      <td style="color:var(--text-muted)">${unit}</td>
+      ${cells}
+      <td class="site-col-cell" style="background:var(--bg)"><span class="badge ${totalCls}" style="font-size:11px">${total.toFixed(1)}</span></td>
+    </tr>`;
+  }).join('');
+}
 
-                    totalMaterialValueAcrossSites += (siteVal > 0 ? siteVal : 0);
-                    const printVal = siteVal > 0 ? "₹" + siteVal.toLocaleString('en-IN') : "—";
+// STOCK LOGIC
+const typeLabels = { hq:'HQ Supply', purchase:'Site Purchase', client:'Client Issue', transfer:'Contractor Transfer', return:'Return', issue:'Issued Out' };
+const typeBadge = { hq:'b-hq', purchase:'b-purchase', client:'b-client', transfer:'b-transfer', return:'b-return', issue:'b-issue' };
 
-                    rowHtml += `
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
-                            <div class="font-semibold text-slate-800">${siteBal.toFixed(1)}</div>
-                            <div class="text-[11px] text-amber-600 font-medium mt-0.5">${printVal}</div>
-                        </td>`;
-                });
+function getBalance(matName) {
+  let inn=0, out=0;
+  Object.values(transactions).forEach(tx => {
+    if(tx.material !== matName) return;
+    if(tx.direction==='in') inn += parseFloat(tx.qty)||0;
+    else out += parseFloat(tx.qty)||0;
+  });
+  return { inn, out, bal: inn-out };
+}
 
-                const totalValFormatted = totalMaterialValueAcrossSites > 0 ? "₹" + totalMaterialValueAcrossSites.toLocaleString('en-IN', {minimumFractionDigits: 2}) : "—";
-                rowHtml += `<td class="px-6 py-4 text-right font-bold text-amber-700 bg-amber-50/50">${totalValFormatted}</td></tr>`;
-                
-                tbody.innerHTML += rowHtml;
-            });
+function populateDropdowns() {
+  const matNames = Object.values(materials).map(m=>m.name).sort();
+  ['in-material','out-material','f-mat'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const cur = el.value;
+    const prefix = id==='f-mat'?'<option value="">All materials</option>':'<option value="">— select —</option>';
+    el.innerHTML = prefix + matNames.map(n=>{
+      const m = Object.values(materials).find(x=>x.name===n);
+      return `<option value="${n}">${n} (${m?.unit||''})</option>`;
+    }).join('');
+    if(cur) el.value = cur;
+  });
+}
 
-            table.appendChild(tbody);
-        }
+window.fillOutwardMeta = function() {
+  const name = document.getElementById('out-material').value;
+  const m = Object.values(materials).find(x=>x.name===name);
+  if(m) {
+    document.getElementById('out-unit').value = m.unit;
+    const {bal} = getBalance(name);
+    document.getElementById('out-avail').value = bal.toFixed(2) + ' ' + m.unit;
+  } else {
+    document.getElementById('out-unit').value='';
+    document.getElementById('out-avail').value='';
+  }
+};
 
-        window.onload = function() {
-            refreshDashboard();
-        };
-    </script>
+function renderDashboard() {
+  const txArr = Object.values(transactions);
+  const totalMats = Object.keys(materials).length;
+  const totalTx = txArr.length;
+  const totalIn = txArr.filter(t=>t.direction==='in').reduce((s,t)=>s+(parseFloat(t.qty)||0),0);
+  const totalOut = txArr.filter(t=>t.direction==='out').reduce((s,t)=>s+(parseFloat(t.qty)||0),0);
+  document.getElementById('metrics-grid').innerHTML = `
+    <div class="metric"><div class="metric-label">Materials Tracked</div><div class="metric-value">${totalMats}</div></div>
+    <div class="metric"><div class="metric-label">Total Transactions</div><div class="metric-value">${totalTx}</div></div>
+    <div class="metric"><div class="metric-label">Units Received</div><div class="metric-value">${totalIn.toFixed(1)}</div><div class="metric-sub">across all materials</div></div>
+    <div class="metric"><div class="metric-label">Units Issued</div><div class="metric-value">${totalOut.toFixed(1)}</div><div class="metric-sub">from stockyard</div></div>`;
+
+  let alerts = '';
+  Object.values(materials).forEach(m => {
+    if(!m.min||m.min<=0) return;
+    const {bal} = getBalance(m.name);
+    if(bal<=m.min) alerts += `<div class="alert alert-low">⚠ Low stock: <strong>${m.name}</strong> — balance ${bal.toFixed(2)} ${m.unit} (min: ${m.min})</div>`;
+  });
+  document.getElementById('low-alerts').innerHTML = alerts;
+
+  const allRecent = [...txArr].sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const totalRecentPages = Math.max(1, Math.ceil(allRecent.length / recentPageSize));
+  if(recentPage > totalRecentPages) recentPage = totalRecentPages;
+  const recent = allRecent.slice((recentPage-1)*recentPageSize, recentPage*recentPageSize);
+  const tbody = document.getElementById('recent-body');
+  if(!allRecent.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No transactions yet for this site.</td></tr>';
+    document.getElementById('recent-pagination').innerHTML=''; return; }
+  tbody.innerHTML = recent.map(t=>`<tr>
+    <td style="font-family:var(--mono);font-size:12px">${t.date}</td>
+    <td><span class="badge ${typeBadge[t.type]||''}">${typeLabels[t.type]||t.type}</span></td>
+    <td><strong>${t.material}</strong></td>
+    <td style="color:var(--green);font-weight:500">${t.direction==='in'?t.qty:''}</td>
+    <td style="color:var(--accent);font-weight:500">${t.direction==='out'?t.qty:''}</td>
+    <td style="color:var(--text-muted)">${t.unit||''}</td>
+    <td>${t.person||''}</td>
+  </tr>`).join('');
+  renderPagination('recent-pagination', recentPage, totalRecentPages,
+  'changeRecentPage',
+  recentPageSize,
+  'changeRecentPageSize');
+}
+
+window.renderLedger = function() {
+  populateDropdowns();
+  const txt = (document.getElementById('f-text').value||'').toLowerCase();
+  const ftype = document.getElementById('f-type').value;
+  const fmat = document.getElementById('f-mat').value;
+  const ffrom = document.getElementById('f-from')?.value||'';
+  const fto = document.getElementById('f-to')?.value||'';
+  let txs = Object.entries(transactions).map(([k,v])=>({...v,_key:k})).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(txt) txs = txs.filter(t=>(t.material+t.person+t.purpose+t.challan+t.remarks+'').toLowerCase().includes(txt));
+  if(ftype) txs = txs.filter(t=>t.type===ftype);
+  if(fmat) txs = txs.filter(t=>t.material===fmat);
+  if(ffrom) txs = txs.filter(t=>t.date >= ffrom);
+  if(fto) txs = txs.filter(t=>t.date <= fto);
+  const totalPages = Math.max(1, Math.ceil(txs.length / ledgerPageSize));
+  if(ledgerPage > totalPages) ledgerPage = totalPages;
+  const paged = txs.slice((ledgerPage-1)*ledgerPageSize, ledgerPage*ledgerPageSize);
+  const tbody = document.getElementById('ledger-body');
+  if(!txs.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="12">No transactions found</td></tr>';
+    document.getElementById('ledger-pagination').innerHTML=''; return; }
+  tbody.innerHTML = paged.map(t=>`<tr>
+    <td style="font-family:var(--mono);font-size:11px;white-space:nowrap">${t.date}</td>
+    <td><span class="badge ${typeBadge[t.type]||''}">${typeLabels[t.type]||t.type}</span></td>
+    <td><strong>${t.material}</strong></td>
+    <td style="color:var(--green);font-weight:500">${t.direction==='in'?t.qty:''}</td>
+    <td style="color:var(--accent);font-weight:500">${t.direction==='out'?t.qty:''}</td>
+    <td style="color:var(--text-muted)">${t.unit||''}</td>
+    <td>${t.direction==='in'?t.person||'':''}</td>
+    <td>${t.direction==='out'?t.person||'':''}</td>
+    <td style="font-size:12px">${t.purpose||''}</td>
+    <td style="font-family:var(--mono);font-size:11px">${t.challan||''}</td>
+    <td style="font-size:12px;color:var(--text-muted)">${t.remarks||''}</td>
+    <td><button class="btn btn-danger" onclick="deleteTx('${t._key}')">Del</button></td>
+  </tr>`).join('');
+  renderPagination('ledger-pagination', ledgerPage, totalPages,
+  'changeLedgerPage',
+    ledgerPageSize,
+    'function(s){ledgerPageSize=parseInt(s);ledgerPage=1;renderLedger()}');
+};
+
+function renderBalances() {
+  const tbody = document.getElementById('balance-body');
+  const mats = Object.values(materials);
+  if(!mats.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="7">No materials added yet</td></tr>'; return; }
+  tbody.innerHTML = mats.sort((a,b)=>a.name.localeCompare(b.name)).map(m=>{
+    const {inn,out,bal} = getBalance(m.name);
+    const low = m.min>0 && bal<=m.min;
+    return `<tr>
+      <td><strong>${m.name}</strong></td>
+      <td style="color:var(--text-muted)">${m.unit}</td>
+      <td style="color:var(--green);font-weight:500">${inn.toFixed(2)}</td>
+      <td style="color:var(--accent);font-weight:500">${out.toFixed(2)}</td>
+      <td style="font-size:16px;font-weight:600;font-family:var(--mono);color:${low?'var(--accent)':'var(--text)'}">${bal.toFixed(2)}</td>
+      <td style="color:var(--text-muted)">${m.min||'—'}</td>
+      <td><span class="badge ${low?'b-low':'b-ok'}">${low?'LOW':'OK'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMaterials() {
+  const tbody = document.getElementById('mat-body');
+  const mats = Object.entries(materials);
+  if(!mats.length) { tbody.innerHTML='<tr class="empty-row"><td colspan="4">No materials yet. Add your first material above.</td></tr>'; return; }
+  tbody.innerHTML = mats.sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([k,m])=>`<tr>
+    <td><strong>${m.name}</strong></td>
+    <td style="color:var(--text-muted)">${m.unit}</td>
+    <td style="color:var(--text-muted)">${m.min||'None'}</td>
+    <td><button class="btn btn-danger" onclick="deleteMaterial('${k}','${m.name.replace(/'/g,"\\'")}')">Delete</button></td>
+  </tr>`).join('');
+}
+
+window.addMaterial = async function() {
+  if(!currentSiteKey) { toast('No site selected.', true); return; }
+  const name = document.getElementById('mat-name').value.trim();
+  const unit = document.getElementById('mat-unit').value;
+  const min = parseFloat(document.getElementById('mat-min').value)||0;
+  if(!name) { toast('Please enter a material name.', true); return; }
+  if(Object.values(materials).find(m=>m.name===name)) { toast('Material already exists.', true); return; }
+  setSyncing();
+  try {
+    await push(ref(db,`materials/${currentSiteKey}`), { name, unit, min });
+    document.getElementById('mat-name').value='';
+    document.getElementById('mat-min').value='';
+    toast('Material added!');
+  } catch(e) { setError(); toast('Error saving.', true); }
+};
+
+window.deleteMaterial = async function(key, name) {
+  if(!confirm(`Delete "${name}"? Transaction history will be kept.`)) return;
+  setSyncing();
+  try { await remove(ref(db,`materials/${currentSiteKey}/${key}`)); toast('Material deleted.'); }
+  catch(e) { setError(); toast('Error deleting.', true); }
+};
+
+window.saveInward = async function() {
+  if(!currentSiteKey) { toast('No site selected.', true); return; }
+  const date = document.getElementById('in-date').value;
+  const type = document.getElementById('in-type').value;
+  let material = document.getElementById('in-material').value;
+  const newMat = document.getElementById('in-new-material').value.trim();
+  const qty = parseFloat(document.getElementById('in-qty').value);
+  const unit = document.getElementById('in-unit').value;
+  const challan = document.getElementById('in-challan').value.trim();
+  const from = document.getElementById('in-from').value.trim();
+  const remarks = document.getElementById('in-remarks').value.trim();
+
+  if(!date) { toast('Please select a date.', true); return; }
+  if(!qty||qty<=0) { toast('Please enter a valid quantity.', true); return; }
+  if(!from) { toast('Please enter received from name.', true); return; }
+
+  setSyncing();
+  try {
+    if(newMat) {
+      if(!Object.values(materials).find(m=>m.name===newMat)) {
+        await push(ref(db,`materials/${currentSiteKey}`), { name: newMat, unit, min: 0 });
+      }
+      material = newMat;
+      document.getElementById('in-new-material').value='';
+    }
+    if(!material) { toast('Please select or enter a material.', true); setSynced(); return; }
+    await push(ref(db,`transactions/${currentSiteKey}`), { date, type, material, qty, unit, challan, person: from, remarks, direction:'in', ts: Date.now() });
+    document.getElementById('in-qty').value='';
+    document.getElementById('in-challan').value='';
+    document.getElementById('in-from').value='';
+    document.getElementById('in-remarks').value='';
+    toast('Inward entry saved!');
+  } catch(e) { setError(); toast('Error saving.', true); }
+};
+
+window.saveOutward = async function() {
+  if(!currentSiteKey) { toast('No site selected.', true); return; }
+  const date = document.getElementById('out-date').value;
+  const material = document.getElementById('out-material').value;
+  const qty = parseFloat(document.getElementById('out-qty').value);
+  const unit = document.getElementById('out-unit').value;
+  const to = document.getElementById('out-to').value.trim();
+  const purpose = document.getElementById('out-purpose').value.trim();
+  const by = document.getElementById('out-by').value.trim();
+  const remarks = document.getElementById('out-remarks').value.trim();
+
+  if(!date) { toast('Please select a date.', true); return; }
+  if(!material) { toast('Please select a material.', true); return; }
+  if(!qty||qty<=0) { toast('Please enter a valid quantity.', true); return; }
+  if(!to) { toast('Please enter the name of person receiving material.', true); return; }
+
+  const {bal} = getBalance(material);
+  if(qty > bal) { toast(`Insufficient stock! Available: ${bal.toFixed(2)} ${unit}`, true); return; }
+
+  setSyncing();
+  try {
+    await push(ref(db,`transactions/${currentSiteKey}`), { date, type:'issue', material, qty, unit, person: to, purpose, issuedBy: by, remarks, direction:'out', ts: Date.now() });
+    document.getElementById('out-qty').value='';
+    document.getElementById('out-to').value='';
+    document.getElementById('out-purpose').value='';
+    document.getElementById('out-by').value='';
+    document.getElementById('out-remarks').value='';
+    fillOutwardMeta();
+    toast('Issuance entry saved!');
+  } catch(e) { setError(); toast('Error saving.', true); }
+};
+
+window.deleteTx = async function(key) {
+  if(!confirm('Delete this transaction entry?')) return;
+  setSyncing();
+  try { await remove(ref(db,`transactions/${currentSiteKey}/${key}`)); toast('Entry deleted.'); renderLedger(); }
+  catch(e) { setError(); toast('Error deleting.', true); }
+};
+
+window.exportCSV = function() {
+  const site = currentSiteKey ? allSites[currentSiteKey] : null;
+  const siteName = site ? site.name : 'site';
+  const headers = ['Date','Type','Material','In Qty','Out Qty','Unit','Received From','Issued To','Purpose','Issued By','Challan No','Remarks'];
+  const rows = Object.values(transactions).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>[
+    t.date, typeLabels[t.type]||t.type, t.material,
+    t.direction==='in'?t.qty:'', t.direction==='out'?t.qty:'',
+    t.unit||'', t.direction==='in'?t.person||'':'', t.direction==='out'?t.person||'':'',
+    t.purpose||'', t.issuedBy||'', t.challan||'', t.remarks||''
+  ]);
+  const csv = [headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url;
+  a.download=`stock_${siteName}_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+};
+
+// PAGINATION STATE
+let ledgerPage = 1;
+let recentPage = 1;
+const PAGE_SIZE_DEFAULT = 20;
+let ledgerPageSize = PAGE_SIZE_DEFAULT;
+let recentPageSize = PAGE_SIZE_DEFAULT;
+
+window.changeLedgerPage = function(p) {
+  ledgerPage = p;
+  renderLedger();
+};
+
+window.changeRecentPage = function(p) {
+  recentPage = p;
+  renderDashboard();
+};
+
+window.changeLedgerPageSize = function(s) {
+  ledgerPageSize = parseInt(s);
+  ledgerPage = 1;
+  renderLedger();
+};
+
+window.changeRecentPageSize = function(s) {
+  recentPageSize = parseInt(s);
+  recentPage = 1;
+  renderDashboard();
+};
+
+window.resetLedgerPage = function() { ledgerPage = 1; };
+window.clearDateRange = function() {
+  document.getElementById('f-from').value = '';
+  document.getElementById('f-to').value = '';
+  ledgerPage = 1;
+  renderLedger();
+};
+
+function renderPagination(containerId, currentPage, totalPages, onPageChange, pageSize, onSizeChange) {
+  const el = document.getElementById(containerId);
+
+  // Hide pagination if only 1 page
+  if (totalPages <= 1) {
+    el.innerHTML = '';
+    return;
+  }
+
+  const start = (currentPage - 1) * pageSize + 1;
+  const end = Math.min(currentPage * pageSize, totalPages * pageSize);
+
+  let pages = '';
+  const delta = 2;
+
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+      pages += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="${onPageChange}(${i})">${i}</button>`;
+    } else if (i === currentPage - delta - 1 || i === currentPage + delta + 1) {
+      pages += `<span style="color:var(--text-faint);padding:0 2px">…</span>`;
+    }
+  }
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="pagination-info">Page ${currentPage} of ${totalPages}</span>
+      <select class="page-size-select" onchange="${onSizeChange}(this.value)">
+        <option value="10" ${pageSize === 10 ? 'selected' : ''}>10/page</option>
+        <option value="20" ${pageSize === 20 ? 'selected' : ''}>20/page</option>
+        <option value="50" ${pageSize === 50 ? 'selected' : ''}>50/page</option>
+        <option value="100" ${pageSize === 100 ? 'selected' : ''}>100/page</option>
+      </select>
+    </div>
+
+    <div class="pagination-controls">
+      <button class="page-btn" onclick="${onPageChange}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>
+      ${pages}
+      <button class="page-btn" onclick="${onPageChange}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>›</button>
+    </div>
+  `;
+}
+const activeTab = { current: 'dashboard' };
+window.showTab = function(t) {
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['dashboard','inward','outward','ledger','balances','materials'][i]===t));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  activeTab.current = t;
+  populateDropdowns();
+  if(t==='dashboard') renderDashboard();
+  if(t==='ledger') renderLedger();
+  if(t==='balances') renderBalances();
+  if(t==='materials') renderMaterials();
+};
+
+</script>
 </body>
 </html>
